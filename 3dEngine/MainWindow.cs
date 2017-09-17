@@ -3,9 +3,7 @@ using Gtk;
 using Projekt_LGiM;
 using Gdk;
 using MathNet.Spatial.Euclidean;
-using System.Threading;
 using System.Diagnostics;
-using System.Windows;
 
 [Flags] public enum State { none = 0, lpm = 1, ppm = 2, shift = 4 };
 public enum Tryb { Przesuwanie, Skalowanie, Obracanie };
@@ -46,39 +44,20 @@ public partial class MainWindow : Gtk.Window
 		scena.Swiat[1].Skaluj(new Vector3D(-50, -50, -50));
 		scena.ZrodloSwiatlaIndeks = 0;
 
-		var t = new Thread(new ParameterizedThreadStart((e) =>
-		{
-			var stopWatch = new Stopwatch();
-			double avgRefreshTime = 0;
-			int i = 1;
-
-			while (true)
-			{
-				Thread.Sleep(15);
-				stopWatch.Restart();
-				scena.ZrodloSwiatla = scena.Swiat[scena.ZrodloSwiatlaIndeks].VertexCoords.ZnajdzSrodek();
-				RysujNaEkranie();
-				stopWatch.Stop();
-				avgRefreshTime += stopWatch.ElapsedMilliseconds;
-
-				if (i == 100)
-				{
-					labelOpoznienie.Text = avgRefreshTime / i + " ms";
-					i = 0;
-					avgRefreshTime = 0;
-				}
-				++i;
-			}
-		}));
-
-		t.IsBackground = true;
-		t.Start();
+        GLib.Timeout.Add(50, new GLib.TimeoutHandler(OnUpdate));
 
         eventboxEkran.AddEvents((int)(EventMask.PointerMotionMask
                                     | EventMask.Button1MotionMask
                                     | EventMask.Button2MotionMask
                                     | EventMask.ScrollMask));
 	}
+
+    protected bool OnUpdate()
+    {
+		scena.ZrodloSwiatla = scena.Swiat[scena.ZrodloSwiatlaIndeks].VertexCoords.ZnajdzSrodek();
+		RysujNaEkranie();
+        return true;
+    }
 
 	protected void OnDeleteEvent(object sender, DeleteEventArgs a)
 	{
@@ -154,7 +133,6 @@ public partial class MainWindow : Gtk.Window
                 stan |= global::State.shift;
                 break;
 		}
-
 		return base.OnKeyPressEvent(evnt);
 	}
 
@@ -185,7 +163,7 @@ public partial class MainWindow : Gtk.Window
 		}
 
 		fc.Destroy();
-    }
+	}
 
     protected void OnWczytajNowyActionActivated(object sender, EventArgs e)
     {
@@ -200,7 +178,7 @@ public partial class MainWindow : Gtk.Window
         }
 
         fc.Destroy();
-    }
+	}
 
     protected void OnWczytajActionActivated(object sender, EventArgs e)
     {
@@ -220,7 +198,7 @@ public partial class MainWindow : Gtk.Window
 		}
 
         fc.Destroy();
-    }
+	}
 
     protected void OnSterowanieActionActivated(object sender, EventArgs e)
     {
@@ -229,12 +207,11 @@ public partial class MainWindow : Gtk.Window
     protected void OnButtonZmienZrodloSwiatlaClicked(object sender, EventArgs e)
     {
         scena.ZrodloSwiatlaIndeks = comboboxModele.Active;
-    }
+	}
 
     protected void OnEventboxEkranMotionNotifyEvent(object o, MotionNotifyEventArgs args)
     {
-        label4.Text = stan.ToString();
-        if ((stan & global::State.lpm) != 0)
+		if ((stan & global::State.lpm) != 0)
 		{
             if ((stan & global::State.shift) != 0)
 			{
@@ -305,7 +282,7 @@ public partial class MainWindow : Gtk.Window
 		}
 
 		ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
-    }
+	}
 
     protected void OnEventboxEkranButtonPressEvent(object o, ButtonPressEventArgs args)
     {
@@ -320,7 +297,7 @@ public partial class MainWindow : Gtk.Window
             ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
             stan |= global::State.ppm;
         }
-    }
+	}
 
 	protected void OnEventboxEkranButtonReleaseEvent(object o, ButtonReleaseEventArgs args)
 	{
