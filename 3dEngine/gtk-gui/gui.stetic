@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<stetic-interface>
+  <configuration>
+    <images-root-path>..</images-root-path>
+  </configuration>
+  <import>
+    <widget-library name="../bin/Debug/3dEngine.exe" internal="true" />
+  </import>
+  <widget class="Gtk.Window" id="MainWindow" design-size="1258 804">
+    <action-group name="Default">
+      <action id="PlikAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Plik</property>
+        <property name="ShortLabel" translatable="yes">Plik</property>
+      </action>
+      <action id="ModelAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Model</property>
+        <property name="ShortLabel" translatable="yes">Model</property>
+      </action>
+      <action id="TeksturaAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Tekstura</property>
+        <property name="ShortLabel" translatable="yes">Tekstura</property>
+      </action>
+      <action id="ZastpAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Zastąp...</property>
+        <property name="ShortLabel" translatable="yes">Zastąp...</property>
+        <signal name="Activated" handler="OnZastpActionActivated" />
+      </action>
+      <action id="WczytajNowyAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Wczytaj nowy...</property>
+        <property name="ShortLabel" translatable="yes">Wczytaj nowy...</property>
+        <signal name="Activated" handler="OnWczytajNowyActionActivated" />
+      </action>
+      <action id="WczytajAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Wczytaj...</property>
+        <property name="ShortLabel" translatable="yes">Wczytaj...</property>
+        <signal name="Activated" handler="OnWczytajActionActivated" />
+      </action>
+      <action id="PomocAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Pomoc</property>
+        <property name="ShortLabel" translatable="yes">Pomoc</property>
+      </action>
+      <action id="SterowanieAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Sterowanie...</property>
+        <property name="ShortLabel" translatable="yes">Sterowanie...</property>
+        <signal name="Activated" handler="OnSterowanieActionActivated" />
+      </action>
+    </action-group>
+    <property name="MemberName" />
+    <property name="Title" translatable="yes">MainWindow</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <signal name="DeleteEvent" handler="OnDeleteEvent" />
+    <child>
+      <widget class="Gtk.VBox" id="vbox1">
+        <property name="MemberName" />
+        <property name="Spacing">6</property>
+        <child>
+          <widget class="Gtk.HBox" id="hbox1">
+            <property name="MemberName" />
+            <property name="Spacing">6</property>
+            <child>
+              <widget class="Gtk.MenuBar" id="menubarMain">
+                <property name="MemberName" />
+                <node name="menubarMain" type="Menubar">
+                  <node type="Menu" action="PlikAction">
+                    <node type="Menu" action="ModelAction">
+                      <node type="Menuitem" action="ZastpAction" />
+                      <node type="Menuitem" action="WczytajNowyAction" />
+                    </node>
+                    <node type="Menu" action="TeksturaAction">
+                      <node type="Menuitem" action="WczytajAction" />
+                    </node>
+                  </node>
+                  <node type="Menu" action="PomocAction">
+                    <node type="Menuitem" action="SterowanieAction" />
+                  </node>
+                </node>
+              </widget>
+              <packing>
+                <property name="Position">0</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.Label" id="labelOpoznienie">
+                <property name="MemberName" />
+                <property name="LabelProp" translatable="yes">0 ms</property>
+              </widget>
+              <packing>
+                <property name="PackType">End</property>
+                <property name="Position">1</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+                <property name="Padding">15</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">0</property>
+            <property name="AutoSize">True</property>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.HBox" id="hbox2">
+            <property name="MemberName" />
+            <property name="Spacing">6</property>
+            <child>
+              <widget class="Gtk.Frame" id="frame1">
+                <property name="MemberName" />
+                <property name="ShadowType">None</property>
+                <child>
+                  <widget class="Gtk.Alignment" id="GtkAlignment">
+                    <property name="MemberName" />
+                    <property name="Xalign">0</property>
+                    <property name="Yalign">0</property>
+                    <property name="LeftPadding">12</property>
+                    <child>
+                      <widget class="Gtk.Image" id="imageEkran">
+                        <property name="MemberName" />
+                        <property name="WidthRequest">1024</property>
+                        <property name="HeightRequest">768</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+              <packing>
+                <property name="Position">0</property>
+                <property name="AutoSize">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.VBox" id="vbox2">
+                <property name="MemberName" />
+                <property name="WidthRequest">200</property>
+                <property name="Spacing">6</property>
+                <property name="BorderWidth">15</property>
+                <child>
+                  <widget class="Gtk.Label" id="labelSzybkosc">
+                    <property name="MemberName" />
+                    <property name="LabelProp" translatable="yes">Szybkość</property>
+                  </widget>
+                  <packing>
+                    <property name="Position">0</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.HScale" id="hscaleSzybkosc">
+                    <property name="MemberName" />
+                    <property name="CanFocus">True</property>
+                    <property name="Upper">100</property>
+                    <property name="PageIncrement">10</property>
+                    <property name="StepIncrement">1</property>
+                    <property name="DrawValue">True</property>
+                    <property name="Digits">0</property>
+                    <property name="ValuePos">Top</property>
+                  </widget>
+                  <packing>
+                    <property name="Position">1</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.ComboBox" id="comboboxModele">
+                    <property name="MemberName" />
+                    <property name="IsTextCombo">True</property>
+                    <property name="Items" translatable="yes" />
+                  </widget>
+                  <packing>
+                    <property name="Position">2</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.Button" id="buttonZmienZrodloSwiatla">
+                    <property name="MemberName" />
+                    <property name="CanFocus">True</property>
+                    <property name="Type">TextOnly</property>
+                    <property name="Label" translatable="yes">Ustaw jako źródło światła</property>
+                    <property name="UseUnderline">True</property>
+                  </widget>
+                  <packing>
+                    <property name="Position">3</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.HBox" id="hbox3">
+                    <property name="MemberName" />
+                    <property name="Spacing">6</property>
+                    <child>
+                      <widget class="Gtk.Label" id="label4">
+                        <property name="MemberName" />
+                        <property name="LabelProp" translatable="yes">Tryb edycji:</property>
+                      </widget>
+                      <packing>
+                        <property name="Position">0</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="Gtk.Label" id="labelTrybEdycji">
+                        <property name="MemberName" />
+                        <property name="LabelProp" translatable="yes">Przesuwanie</property>
+                      </widget>
+                      <packing>
+                        <property name="PackType">End</property>
+                        <property name="Position">1</property>
+                        <property name="AutoSize">True</property>
+                        <property name="Expand">False</property>
+                        <property name="Fill">False</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="PackType">End</property>
+                    <property name="Position">4</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                    <property name="Padding">15</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.CheckButton" id="checkbuttonSiatkaPodlogi">
+                    <property name="MemberName" />
+                    <property name="CanFocus">True</property>
+                    <property name="Label" translatable="yes">Siatka podłogi</property>
+                    <property name="DrawIndicator">True</property>
+                    <property name="HasLabel">True</property>
+                    <property name="UseUnderline">True</property>
+                  </widget>
+                  <packing>
+                    <property name="PackType">End</property>
+                    <property name="Position">5</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.CheckButton" id="checkbuttonSiatka">
+                    <property name="MemberName" />
+                    <property name="CanFocus">True</property>
+                    <property name="Label" translatable="yes">Siatka</property>
+                    <property name="DrawIndicator">True</property>
+                    <property name="HasLabel">True</property>
+                    <property name="UseUnderline">True</property>
+                  </widget>
+                  <packing>
+                    <property name="PackType">End</property>
+                    <property name="Position">6</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="Position">1</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+                <property name="Padding">5</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">1</property>
+            <property name="AutoSize">False</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+</stetic-interface>
