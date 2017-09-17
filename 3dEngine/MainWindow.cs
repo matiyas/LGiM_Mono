@@ -5,7 +5,9 @@ using Gdk;
 using MathNet.Spatial.Euclidean;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows;
 
+[Flags] public enum State { none = 0, lpm = 1, ppm = 2, shift = 4 };
 public enum Tryb { Przesuwanie, Skalowanie, Obracanie };
 
 public partial class MainWindow : Gtk.Window
@@ -19,15 +21,15 @@ public partial class MainWindow : Gtk.Window
 
 	Scena scena;
 	Point lpm0, ppm0;
-	double dpi;
 	double czuloscMyszy;
 	Tryb tryb;
+    State stan;
 
 	public MainWindow() : base(Gtk.WindowType.Toplevel)
 	{
 		Build();
 
-		dpi = 96;
+        stan = global::State.none;
 		czuloscMyszy = 0.3;
 		labelTrybEdycji.Text = tryb.ToString();
 		comboboxModele.Active = 0;
@@ -71,6 +73,11 @@ public partial class MainWindow : Gtk.Window
 
 		t.IsBackground = true;
 		t.Start();
+
+        eventboxEkran.AddEvents((int)(EventMask.PointerMotionMask
+                                    | EventMask.Button1MotionMask
+                                    | EventMask.Button2MotionMask
+                                    | EventMask.ScrollMask));
 	}
 
 	protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -100,58 +107,63 @@ public partial class MainWindow : Gtk.Window
 		imageEkran.Pixbuf = new Pixbuf(scena.BackBuffer, Colorspace.Rgb, true, 8, scena.Rozmiar.Width, scena.Rozmiar.Height, 4 * scena.Rozmiar.Width);
 	}
 
-	//void Ekran_MouseWheel(object sender, MouseWheelEventArgs e)
-	//{
-	//  if (e.Delta > 0) { scena.Odleglosc += 100; }
-	//  else { scena.Odleglosc -= 100; }
-	//}
-
-	protected override bool OnKeyPressEvent(EventKey evnt)
+    protected override bool OnKeyPressEvent(EventKey evnt)
 	{
-		switch (evnt.KeyValue)
+		switch (evnt.Key)
 		{
-			case 'w':
+            case Gdk.Key.w:
 				scena.Kamera.DoPrzodu(50);
 				break;
 
-			case 's':
+            case Gdk.Key.s:
 				scena.Kamera.DoPrzodu(-50);
 				break;
 
-			case 'a':
+			case Gdk.Key.a:
 				scena.Kamera.WBok(50);
 				break;
 
-			case 'd':
+			case Gdk.Key.d:
 				scena.Kamera.WBok(-50);
 				break;
 
-			case ' ':
-				scena.Kamera.WGore(50);
+            case Gdk.Key.space:
+				scena.Kamera.WGore(50); 
 				break;
 
-			case 65507: // LCtrl
+            case Gdk.Key.Control_L:
 				scena.Kamera.WGore(-50);
 				break;
 
-			case '1':
+            case Gdk.Key.Key_1:
 				tryb = Tryb.Przesuwanie;
 				labelTrybEdycji.Text = tryb.ToString();
 				break;
 
-			case '2':
+            case Gdk.Key.Key_2:
 				tryb = Tryb.Skalowanie;
 				labelTrybEdycji.Text = tryb.ToString();
 				break;
 
-			case '3':
+            case Gdk.Key.Key_3:
 				tryb = Tryb.Obracanie;
 				labelTrybEdycji.Text = tryb.ToString();
 				break;
+
+            case Gdk.Key.Shift_L:
+                stan |= global::State.shift;
+                break;
 		}
 
 		return base.OnKeyPressEvent(evnt);
 	}
+
+    protected override bool OnKeyReleaseEvent(EventKey evnt)
+    {
+        if (evnt.Key == Gdk.Key.Shift_L) { stan &= ~global::State.shift; }
+
+        return base.OnKeyReleaseEvent(evnt);
+    }
 
     protected void OnZastpActionActivated(object sender, EventArgs e)
     {
@@ -218,4 +230,107 @@ public partial class MainWindow : Gtk.Window
     {
         scena.ZrodloSwiatlaIndeks = comboboxModele.Active;
     }
+
+    protected void OnEventboxEkranMotionNotifyEvent(object o, MotionNotifyEventArgs args)
+    {
+        label4.Text = stan.ToString();
+        if ((stan & global::State.lpm) != 0)
+		{
+            if ((stan & global::State.shift) != 0)
+			{
+                
+				scena.Kamera.Obroc(new Vector3D(0, 0, -(lpm0.X - args.Event.X) / 2));
+			}
+			else
+			{
+				scena.Kamera.Obroc(new Vector3D(-(lpm0.Y - args.Event.Y) * czuloscMyszy,
+					(lpm0.X - args.Event.X) * czuloscMyszy, 0));
+			}
+
+            lpm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+		}
+
+        if ((stan & global::State.ppm) != 0)
+		{
+            Point ile = new Point(-(int)(ppm0.X - args.Event.X), -(int)(ppm0.Y - args.Event.Y));
+
+			switch (tryb)
+			{
+				case Tryb.Przesuwanie:
+					if ((stan & global::State.shift) != 0)
+					{
+                        scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(-ile.Y * scena.Kamera.Przod.X * 3,
+							-ile.Y * scena.Kamera.Przod.Y * 3, -ile.Y * scena.Kamera.Przod.Z * 3));
+					}
+					else
+					{
+						scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.X * scena.Kamera.Prawo.X * 3,
+							ile.X * scena.Kamera.Prawo.Y * 3, ile.X * scena.Kamera.Prawo.Z * 3));
+						scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.Y * scena.Kamera.Gora.X * 3,
+							ile.Y * scena.Kamera.Gora.Y * 3, ile.Y * scena.Kamera.Gora.Z * 3));
+					}
+					break;
+
+				case Tryb.Skalowanie:
+					if ((stan & global::State.shift) != 0)
+					{
+						double s = Math.Sqrt(Math.Pow(ile.X - ile.Y, 2)) * Math.Sign(ile.X - ile.Y) / 2;
+						scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(s, s, s));
+					}
+					else
+					{
+						scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(ile.X * scena.Kamera.Prawo.X,
+							ile.X * scena.Kamera.Prawo.Y, ile.X * scena.Kamera.Prawo.Z));
+						scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(-ile.Y * scena.Kamera.Gora.X,
+							-ile.Y * scena.Kamera.Gora.Y, -ile.Y * scena.Kamera.Gora.Z));
+					}
+					break;
+
+				case Tryb.Obracanie:
+					if ((stan & global::State.shift) != 0)
+					{
+						scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.X, scena.Kamera.Przod,
+							scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
+					}
+					else
+					{
+						scena.Swiat[comboboxModele.Active].ObrocWokolOsi(-ile.X, scena.Kamera.Gora,
+							scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
+
+						scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.Y, scena.Kamera.Prawo,
+							scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
+					}
+					break;
+			}
+		}
+
+		ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+    }
+
+    protected void OnEventboxEkranButtonPressEvent(object o, ButtonPressEventArgs args)
+    {
+        if (args.Event.Button == 1) 
+        { 
+            lpm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+            stan |= global::State.lpm;
+        }
+
+        if (args.Event.Button == 3) 
+        { 
+            ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+            stan |= global::State.ppm;
+        }
+    }
+
+	protected void OnEventboxEkranButtonReleaseEvent(object o, ButtonReleaseEventArgs args)
+	{
+		if (args.Event.Button == 1) { stan &= ~global::State.lpm; }
+		if (args.Event.Button == 3) { stan &= ~global::State.ppm; }
+	}
+
+    protected void OnEventboxEkranScrollEvent(object o, ScrollEventArgs args)
+    {
+		if (args.Event.Direction == ScrollDirection.Down)       { scena.Odleglosc += 100; }
+        else if (args.Event.Direction == ScrollDirection.Up)    { scena.Odleglosc -= 100; }
+	}
 }

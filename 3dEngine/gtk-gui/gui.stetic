@@ -127,10 +127,19 @@
                     <property name="Yalign">0</property>
                     <property name="LeftPadding">12</property>
                     <child>
-                      <widget class="Gtk.Image" id="imageEkran">
+                      <widget class="Gtk.EventBox" id="eventboxEkran">
                         <property name="MemberName" />
-                        <property name="WidthRequest">1024</property>
-                        <property name="HeightRequest">768</property>
+                        <signal name="ButtonPressEvent" handler="OnEventboxEkranButtonPressEvent" />
+                        <signal name="ScrollEvent" handler="OnEventboxEkranScrollEvent" />
+                        <signal name="ButtonReleaseEvent" handler="OnEventboxEkranButtonReleaseEvent" />
+                        <signal name="MotionNotifyEvent" handler="OnEventboxEkranMotionNotifyEvent" />
+                        <child>
+                          <widget class="Gtk.Image" id="imageEkran">
+                            <property name="MemberName" />
+                            <property name="WidthRequest">1024</property>
+                            <property name="HeightRequest">768</property>
+                          </widget>
+                        </child>
                       </widget>
                     </child>
                   </widget>
@@ -148,43 +157,13 @@
                 <property name="Spacing">6</property>
                 <property name="BorderWidth">15</property>
                 <child>
-                  <widget class="Gtk.Label" id="labelSzybkosc">
-                    <property name="MemberName" />
-                    <property name="LabelProp" translatable="yes">Szybkość</property>
-                  </widget>
-                  <packing>
-                    <property name="Position">0</property>
-                    <property name="AutoSize">True</property>
-                    <property name="Expand">False</property>
-                    <property name="Fill">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="Gtk.HScale" id="hscaleSzybkosc">
-                    <property name="MemberName" />
-                    <property name="CanFocus">True</property>
-                    <property name="Upper">100</property>
-                    <property name="PageIncrement">10</property>
-                    <property name="StepIncrement">1</property>
-                    <property name="DrawValue">True</property>
-                    <property name="Digits">0</property>
-                    <property name="ValuePos">Top</property>
-                  </widget>
-                  <packing>
-                    <property name="Position">1</property>
-                    <property name="AutoSize">True</property>
-                    <property name="Expand">False</property>
-                    <property name="Fill">False</property>
-                  </packing>
-                </child>
-                <child>
                   <widget class="Gtk.ComboBox" id="comboboxModele">
                     <property name="MemberName" />
                     <property name="IsTextCombo">True</property>
                     <property name="Items" translatable="yes" />
                   </widget>
                   <packing>
-                    <property name="Position">2</property>
+                    <property name="Position">0</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
@@ -200,7 +179,7 @@
                     <signal name="Clicked" handler="OnButtonZmienZrodloSwiatlaClicked" />
                   </widget>
                   <packing>
-                    <property name="Position">3</property>
+                    <property name="Position">1</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
@@ -238,7 +217,7 @@
                   </widget>
                   <packing>
                     <property name="PackType">End</property>
-                    <property name="Position">4</property>
+                    <property name="Position">2</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
@@ -257,7 +236,7 @@
                   </widget>
                   <packing>
                     <property name="PackType">End</property>
-                    <property name="Position">5</property>
+                    <property name="Position">3</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
@@ -275,7 +254,7 @@
                   </widget>
                   <packing>
                     <property name="PackType">End</property>
-                    <property name="Position">6</property>
+                    <property name="Position">4</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>
