@@ -82,7 +82,11 @@ public partial class MainWindow : Gtk.Window
 	void WczytajModel(string sciezkaModel, string sciezkaTekstura)
 	{
 		scena.Swiat.Add(new WavefrontObj(sciezkaModel));
-		scena.Swiat[scena.Swiat.Count - 1].Renderowanie = new Renderowanie(sciezkaTekstura, scena);
+
+        if(sciezkaTekstura != null)
+        {
+			scena.Swiat[scena.Swiat.Count - 1].Renderowanie = new Renderowanie(sciezkaTekstura, scena);
+		}
 		comboboxModele.AppendText(scena.Swiat[scena.Swiat.Count - 1].Nazwa ?? "Model" + (scena.Swiat.Count - 1));
 		comboboxModele.Active = scena.Swiat.Count - 1;
 		scena.Swiat[scena.Swiat.Count - 1].Obroc(new Vector3D(Math.PI * 100, 0, 0));
@@ -151,18 +155,67 @@ public partial class MainWindow : Gtk.Window
 
     protected void OnZastpActionActivated(object sender, EventArgs e)
     {
-        
+		FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
+													 "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
+		fc.Filter = new FileFilter();
+		fc.Filter.AddPattern("*.obj");
+
+		if (fc.Run() == (int)ResponseType.Ok)
+		{
+			var model = new WavefrontObj(fc.Filename);
+			model.Obroc(new Vector3D(Math.PI * 100, 0, 0));
+            model.Renderowanie = scena.Swiat[comboboxModele.Active].Renderowanie;
+
+			int tmp = comboboxModele.Active;
+			scena.Swiat[comboboxModele.Active] = model;
+            comboboxModele.AppendText(model.Nazwa);
+			comboboxModele.Active = tmp;
+		}
+
+		fc.Destroy();
     }
 
     protected void OnWczytajNowyActionActivated(object sender, EventArgs e)
     {
+        FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
+                                                     "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
+        fc.Filter = new FileFilter();
+        fc.Filter.AddPattern("*.obj");
+
+        if (fc.Run() == (int)ResponseType.Ok)
+        {
+            WczytajModel(fc.Filename, null);
+        }
+
+        fc.Destroy();
     }
 
     protected void OnWczytajActionActivated(object sender, EventArgs e)
     {
+		FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
+													 "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
+        fc.Filter = new FileFilter();
+		fc.Filter.AddPattern("*.jpg");
+		fc.Filter.AddPattern("*.jpeg");
+		fc.Filter.AddPattern("*.jpe");
+		fc.Filter.AddPattern("*.png");
+		fc.Filter.AddPattern("*.bmp");
+		fc.Filter.AddPattern("*.tif");
+
+		if (fc.Run() == (int)ResponseType.Ok)
+		{
+            scena.Swiat[comboboxModele.Active].Renderowanie = new Renderowanie(fc.Filename, scena);
+		}
+
+        fc.Destroy();
     }
 
     protected void OnSterowanieActionActivated(object sender, EventArgs e)
     {
+    }
+
+    protected void OnButtonZmienZrodloSwiatlaClicked(object sender, EventArgs e)
+    {
+        scena.ZrodloSwiatlaIndeks = comboboxModele.Active;
     }
 }

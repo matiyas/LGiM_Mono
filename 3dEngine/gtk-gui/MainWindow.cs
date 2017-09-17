@@ -233,6 +233,7 @@ public partial class MainWindow
 		this.checkbuttonSiatkaPodlogi.Label = global::Mono.Unix.Catalog.GetString("Siatka podłogi");
 		this.checkbuttonSiatkaPodlogi.DrawIndicator = true;
 		this.checkbuttonSiatkaPodlogi.UseUnderline = true;
+		this.checkbuttonSiatkaPodlogi.FocusOnClick = false;
 		this.vbox2.Add(this.checkbuttonSiatkaPodlogi);
 		global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.checkbuttonSiatkaPodlogi]));
 		w15.PackType = ((global::Gtk.PackType)(1));
@@ -246,6 +247,7 @@ public partial class MainWindow
 		this.checkbuttonSiatka.Label = global::Mono.Unix.Catalog.GetString("Siatka");
 		this.checkbuttonSiatka.DrawIndicator = true;
 		this.checkbuttonSiatka.UseUnderline = true;
+		this.checkbuttonSiatka.FocusOnClick = false;
 		this.vbox2.Add(this.checkbuttonSiatka);
 		global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox2[this.checkbuttonSiatka]));
 		w16.PackType = ((global::Gtk.PackType)(1));
@@ -274,5 +276,6 @@ public partial class MainWindow
 		this.WczytajNowyAction.Activated += new global::System.EventHandler(this.OnWczytajNowyActionActivated);
 		this.WczytajAction.Activated += new global::System.EventHandler(this.OnWczytajActionActivated);
 		this.SterowanieAction.Activated += new global::System.EventHandler(this.OnSterowanieActionActivated);
+		this.buttonZmienZrodloSwiatla.Clicked += new global::System.EventHandler(this.OnButtonZmienZrodloSwiatlaClicked);
 	}
 }
