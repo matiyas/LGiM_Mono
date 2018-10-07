@@ -11,11 +11,11 @@ The project is 3D engine containing basic functionalities such as loading 3D mod
 
 
 ## Technologies
-* Monodevelop
 * C#
-* Mono
-* GtkSharp
-* Math.Net
+* [Monodevelop](https://www.monodevelop.com/)
+* [Mono](https://www.mono-project.com/)
+* [GtkSharp](https://www.mono-project.com/docs/gui/gtksharp/)
+* [Math.Net](https://www.mathdotnet.com/)
 
 ## Setup
 To run this project:
