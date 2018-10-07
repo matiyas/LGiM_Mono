@@ -21,6 +21,9 @@ The project is 3D engine containing basic functionalities such as loading 3D mod
 This project can be built in Monodevelop. All models and textures can be loaded from any accessible location from disk.
 
 ## Controls
+
+
+### General
 | Key | Function |
 |-----|----------|
 | W   | Move the camera forward |
