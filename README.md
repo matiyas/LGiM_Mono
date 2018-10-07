@@ -28,4 +28,24 @@ This project can be built in Monodevelop. All models and textures can be loaded 
 | 1 | Change mode to moving |
 | 2 | Change mode to scaling | 
 | 3 | Change mode to rotating |
-| 123 |
+
+### Moving mode
+| Key | Function |
+|-----|----------|
+| PPM + Horizontal mouse move | Move the object to the left/right |
+| PPM + Vertical mouse move | Move the object up/down |
+| Left Shift + PPM + Veritcal mouse move | Move the object to yourself/from yourself |
+
+### Scaling mode
+| Key | Function |
+|-----|----------|
+| PPM + Horizontal mouse move | Scale the object horizontally  |
+| PPM + Vertical mouse move | Scale the object vertically |
+| Left Shift + PPM + Veritcal mouse move | Scale the object horizontally and vertically |
+
+### Rotating mode
+| Key | Function |
+|-----|----------|
+| PPM + Horizontal mouse move | Rotate the object horizontally  |
+| PPM + Vertical mouse move | Rotate the object vertically |
+| Left Shift + PPM + Veritcal mouse move | Rotate the object in the z-axis |
