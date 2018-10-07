@@ -19,9 +19,10 @@ The project is 3D engine containing basic functionalities such as loading 3D mod
 
 ## Setup
 To run this project:
-1. Open Monodevelop
-2. Press Control + O and choose 3dEngine.sln
-3. Press Control + F5 to run the program
+1. [Download](https://www.monodevelop.com/download/) and install Monodevelop.
+1. Open Monodevelop.
+2. Press Control + O and choose 3dEngine.sln.
+3. Press Control + F5 to run the program.
 
 
 ## Controls
