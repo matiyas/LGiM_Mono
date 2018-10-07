@@ -1,6 +1,12 @@
 # LGIM_Mono
 
-## Introduction
+## Table of contents
+* [General info](#general-info)
+* [Technologies](#technologies)
+* [Setup](#setup)
+* [Controls](#controls)
+
+## General info
 The project is 3D engine containing basic functionalities such as loading 3D models in .obj format, loading textures for models, rotating, moving and scaling models. It's also possible to move and rotate the camera.
 
 
