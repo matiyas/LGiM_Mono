@@ -34,7 +34,7 @@ This project can be built in Monodevelop. All models and textures can be loaded 
 |-----|----------|
 | PPM + Horizontal mouse move | Move the object to the left/right |
 | PPM + Vertical mouse move | Move the object up/down |
-| Left Shift + PPM + Veritcal mouse move | Move the object to yourself/from yourself |
+| Left Shift + PPM + Veritcal mouse move | Move the object to/from yourself |
 
 ### Scaling mode
 | Key | Function |
