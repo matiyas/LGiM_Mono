@@ -5,6 +5,10 @@
 * [Technologies](#technologies)
 * [Setup](#setup)
 * [Controls](#controls)
+..*[General]
+..*[Moving mode]
+..*[Scaling mode]
+..*[Rotate mode]
 
 ## General info
 The project is 3D engine containing basic functionalities such as loading 3D models in .obj format, loading textures for models, rotating, moving and scaling models. It's also possible to move and rotate the camera.
