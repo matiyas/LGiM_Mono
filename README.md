@@ -7,10 +7,10 @@ This is basic 3d engine. It allows loading multiple 3d models in .obj format. Lo
 * C#
 * Mono
 * GtkSharp
-* MathNet
+* Math.Net
 
 ## Setup
 In order to run this project are required:
 * Monodevelop
 * GtkSharp
-* MathNet library
+* Math.Net library
