@@ -18,7 +18,11 @@ The project is 3D engine containing basic functionalities such as loading 3D mod
 * Math.Net
 
 ## Setup
-This project can be built in Monodevelop. All models and textures can be loaded from any accessible location from disk.
+To run this project:
+* Open Monodevelop
+* Press Control + O and choose 3dEngine.sln
+* Press Control + F5 to run the program
+
 
 ## Controls
 
