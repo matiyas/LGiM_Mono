@@ -1,7 +1,7 @@
 # LGIM_Mono
 
 ## Introduction
-This is basic 3d engine. It allows loading multiple 3d models in .obj format. Loaded models can be freely rotated, scaled and moved on the surface. For each model can have texture. Engine also allows rotation and moving our point of view.
+This is basic 3d engine. It allows loading multiple 3d models in .obj format. Loaded models can be freely rotated, scaled and moved on the surface. Each model can have texture. Engine also allows rotation and moving our point of view.
 
 ## Technologies
 * Monodevelop
