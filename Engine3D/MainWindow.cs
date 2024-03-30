@@ -1,10 +1,9 @@
 using System;
 using Gtk;
-using Projekt_LGiM;
+using Engine3D;
 using Gdk;
 using MathNet.Spatial.Euclidean;
 using UI = Gtk.Builder.ObjectAttribute;
-
 
 [Flags] public enum State { none = 0, lpm = 1, ppm = 2, shift = 4 };
 public enum Tryb { Przesuwanie, Skalowanie, Obracanie };
