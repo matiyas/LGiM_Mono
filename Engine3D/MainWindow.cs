@@ -104,27 +104,27 @@ public partial class MainWindow : Gtk.Window
     switch (evnt.Event.Key)
     {
       case Gdk.Key.w:
-        scena.Kamera.DoPrzodu(50);
+        scena.Kamera.GoForward(50);
         break;
 
       case Gdk.Key.s:
-        scena.Kamera.DoPrzodu(-50);
+        scena.Kamera.GoForward(-50);
         break;
 
       case Gdk.Key.a:
-        scena.Kamera.WBok(50);
+        scena.Kamera.GoSideways(50);
         break;
 
       case Gdk.Key.d:
-        scena.Kamera.WBok(-50);
+        scena.Kamera.GoSideways(-50);
         break;
 
       case Gdk.Key.q:
-        scena.Kamera.WGore(50);
+        scena.Kamera.GoUpward(50);
         break;
 
       case Gdk.Key.z:
-        scena.Kamera.WGore(-50);
+        scena.Kamera.GoUpward(-50);
         break;
 
       case Gdk.Key.Key_1:
@@ -228,11 +228,11 @@ public partial class MainWindow : Gtk.Window
       if ((stan & global::State.shift) != 0)
       {
 
-        scena.Kamera.Obroc(new Vector3D(0, 0, -(lpm0.X - args.Event.X) / 2));
+        scena.Kamera.Rotate(new Vector3D(0, 0, -(lpm0.X - args.Event.X) / 2));
       }
       else
       {
-        scena.Kamera.Obroc(new Vector3D(-(lpm0.Y - args.Event.Y) * czuloscMyszy,
+        scena.Kamera.Rotate(new Vector3D(-(lpm0.Y - args.Event.Y) * czuloscMyszy,
           (lpm0.X - args.Event.X) * czuloscMyszy, 0));
       }
 
@@ -247,15 +247,15 @@ public partial class MainWindow : Gtk.Window
         case Tryb.Przesuwanie:
           if ((stan & global::State.shift) != 0)
           {
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(-ile.Y * scena.Kamera.Przod.X * 3,
-  -ile.Y * scena.Kamera.Przod.Y * 3, -ile.Y * scena.Kamera.Przod.Z * 3));
+            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(-ile.Y * scena.Kamera.Forward.X * 3,
+  -ile.Y * scena.Kamera.Forward.Y * 3, -ile.Y * scena.Kamera.Forward.Z * 3));
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.X * scena.Kamera.Prawo.X * 3,
-              ile.X * scena.Kamera.Prawo.Y * 3, ile.X * scena.Kamera.Prawo.Z * 3));
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.Y * scena.Kamera.Gora.X * 3,
-              ile.Y * scena.Kamera.Gora.Y * 3, ile.Y * scena.Kamera.Gora.Z * 3));
+            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.X * scena.Kamera.Right.X * 3,
+              ile.X * scena.Kamera.Right.Y * 3, ile.X * scena.Kamera.Right.Z * 3));
+            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.Y * scena.Kamera.Upward.X * 3,
+              ile.Y * scena.Kamera.Upward.Y * 3, ile.Y * scena.Kamera.Upward.Z * 3));
           }
           break;
 
@@ -267,25 +267,25 @@ public partial class MainWindow : Gtk.Window
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(ile.X * scena.Kamera.Prawo.X,
-              ile.X * scena.Kamera.Prawo.Y, ile.X * scena.Kamera.Prawo.Z));
-            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(-ile.Y * scena.Kamera.Gora.X,
-              -ile.Y * scena.Kamera.Gora.Y, -ile.Y * scena.Kamera.Gora.Z));
+            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(ile.X * scena.Kamera.Right.X,
+              ile.X * scena.Kamera.Right.Y, ile.X * scena.Kamera.Right.Z));
+            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(-ile.Y * scena.Kamera.Upward.X,
+              -ile.Y * scena.Kamera.Upward.Y, -ile.Y * scena.Kamera.Upward.Z));
           }
           break;
 
         case Tryb.Obracanie:
           if ((stan & global::State.shift) != 0)
           {
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.X, scena.Kamera.Przod,
+            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.X, scena.Kamera.Forward,
               scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(-ile.X, scena.Kamera.Gora,
+            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(-ile.X, scena.Kamera.Upward,
               scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
 
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.Y, scena.Kamera.Prawo,
+            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.Y, scena.Kamera.Right,
               scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
           }
           break;

@@ -27,7 +27,7 @@ class Scena
     tlo.CopyTo(BackBuffer, 0);
 
     Swiat = new List<WavefrontObj>();
-    Kamera = new Kamera();
+    Kamera = new Camera();
     Odleglosc = odlegosc;
 
     zBufor = new double[rozmiar.Width, rozmiar.Height];
@@ -38,7 +38,7 @@ class Scena
 
   public List<WavefrontObj> Swiat { get; set; }
 
-  public Kamera Kamera { get; set; }
+  public Camera Kamera { get; set; }
 
   public int ZrodloSwiatlaIndeks { get; set; } = -1;
 

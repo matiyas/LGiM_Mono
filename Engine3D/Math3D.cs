@@ -120,7 +120,7 @@ static class Math3D
     return wierzcholkiMod;
   }
 
-  public static Vector3D RzutPerspektywiczny(this Vector3D punkt, double d, Vector2D c, Kamera kamera)
+  public static Vector3D RzutPerspektywiczny(this Vector3D punkt, double d, Vector2D c, Camera kamera)
   {
     var Proj = new DenseMatrix(4, 4, new double[]{ 1,  0,  0,  0,
                                                           0,  1,  0,  0,
@@ -132,7 +132,7 @@ static class Math3D
     return new Vector3D(p[0] / p[3] + c.X, p[1] / p[3] + c.Y, p[2] + d/* kalibracja */);
   }
 
-  public static Vector3D[] RzutPerspektywiczny(this Vector3D[] wierzcholki, double d, Vector2D c, Kamera kamera)
+  public static Vector3D[] RzutPerspektywiczny(this Vector3D[] wierzcholki, double d, Vector2D c, Camera kamera)
   {
     var punktyRzut = new Vector3D[wierzcholki.Length];
 
@@ -144,7 +144,7 @@ static class Math3D
     return punktyRzut;
   }
 
-  public static Vector3D ObrocWokolOsi(Vector3D punkt, UnitVector3D os, double kat, Vector3D srodek)
+  public static Vector3D RotateAroundAxis(Vector3D punkt, UnitVector3D os, double kat, Vector3D srodek)
   {
     kat /= 100;
 
@@ -170,16 +170,16 @@ static class Math3D
     return new Vector3D(p[0], p[1], p[2]);
   }
 
-  public static UnitVector3D ObrocWokolOsi(UnitVector3D punkt, UnitVector3D os, double kat)
+  public static UnitVector3D RotateAroundAxis(UnitVector3D punkt, UnitVector3D os, double kat)
   {
-    Vector3D wynik = ObrocWokolOsi(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, new Vector3D(0, 0, 0));
+    Vector3D wynik = RotateAroundAxis(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, new Vector3D(0, 0, 0));
 
     return new Vector3D(wynik.X, wynik.Y, wynik.Z).Normalize();
   }
 
   public static UnitVector3D ObrocWokolOsi(UnitVector3D punkt, UnitVector3D os, double kat, Vector3D srodek)
   {
-    Vector3D wynik = ObrocWokolOsi(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, srodek);
+    Vector3D wynik = RotateAroundAxis(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, srodek);
 
     return new Vector3D(wynik.X, wynik.Y, wynik.Z).Normalize();
   }
@@ -190,7 +190,7 @@ static class Math3D
 
     for (int i = 0; i < wierzcholki.Length; ++i)
     {
-      punktyObrot[i] = ObrocWokolOsi(wierzcholki[i], os, kat, srodek);
+      punktyObrot[i] = RotateAroundAxis(wierzcholki[i], os, kat, srodek);
     }
 
     return punktyObrot;
