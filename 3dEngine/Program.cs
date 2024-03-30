@@ -1,16 +1,23 @@
-﻿using System;
+using System;
 using Gtk;
 
-namespace dEngine
+namespace LGiM_Mono
 {
-    class MainClass
+  class Program
+  {
+    [STAThread]
+    public static void Main()
     {
-        public static void Main(string[] args)
-        {
-            Application.Init();
-            MainWindow win = new MainWindow();
-            win.Show();
-            Application.Run();
-        }
+      Application.Init();
+
+      var app = new Application("org.3dEngine.3dEngine", GLib.ApplicationFlags.None);
+      app.Register(GLib.Cancellable.Current);
+
+      var win = new MainWindow();
+      app.AddWindow(win);
+
+      win.Show();
+      Application.Run();
     }
+  }
 }
