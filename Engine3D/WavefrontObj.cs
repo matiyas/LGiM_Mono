@@ -223,10 +223,10 @@ class WavefrontObj
     VertexNormalsCoords = VertexNormalsCoords.Rotacja(phi, c);
   }
 
-  public void ObrocWokolOsi(double phi, UnitVector3D os, Vector3D c)
+  public void ObrocWokolOsi(double phi, UnitVector3D axis, Vector3D angle)
   {
-    VertexCoords = Math3D.ObrocWokolOsi(VertexCoords, os, phi, c);
-    VertexNormalsCoords = Math3D.ObrocWokolOsi(VertexNormalsCoords, os, phi, c);
+    VertexCoords = Math3D.ObrocWokolOsi(VertexCoords, axis, phi, angle);
+    VertexNormalsCoords = Math3D.ObrocWokolOsi(VertexNormalsCoords, axis, phi, angle);
   }
 
   public void Skaluj(Vector3D s)

@@ -42,10 +42,10 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Wczytaj...</property>
-                                <signal name="activate" handler="OnWczytajNowyActionActivated" swapped="no"/>
+                                <signal name="activate" handler="OnLoadTextureActionActivated" swapped="no"/>
                               </object>
                             </child>
-                          </object>
+                          </object>~
                         </child>
                       </object>
                     </child>
@@ -63,7 +63,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Zastąp...</property>
-                                <signal name="activate" handler="OnZastapActionActivated" swapped="no"/>
+                                <signal name="activate" handler="OnReplaceModelActionActivated" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -71,7 +71,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Wczytaj...</property>
-                                <signal name="activate" handler="OnWczytajNowyActionActivated" swapped="no"/>
+                                <signal name="activate" handler="OnLoadNewModelActionActivated" swapped="no"/>
                               </object>
                             </child>
                           </object>
@@ -137,13 +137,15 @@
                       <object class="GtkEventBox" id="eventboxEkran">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK</property>
-                        <signal name="motion-notify-event" handler="OnEventboxEkranMotionNotifyEvent" swapped="no"/>
-                        <signal name="button-press-event" handler="OnEventboxEkranButtonPressEvent"/>
-                        <signal name="button-release-event" handler="OnEventboxEkranButtonReleaseEvent"/>
-                        <signal name="scroll-event" handler="OnEventboxEkranScrollEvent"/>
+                        <property name="events">
+                          GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_SCROLL_MASK
+                        </property>
+                        <signal name="motion-notify-event" handler="OnEventBoxScreenMotionNotifyEvent" swapped="no"/>
+                        <signal name="button-press-event" handler="OnEventBoxScreenBtnPressEvent"/>
+                        <signal name="button-release-event" handler="OnEventBoxScreenBtnReleaseEvent"/>
+                        <signal name="scroll-event" handler="OnEventBoxScreenScrollEvent"/>
                         <child>
-                          <object class="GtkImage" id="imageEkran">
+                          <object class="GtkImage" id="_imageScreen">
                             <property name="width-request">1024</property>
                             <property name="height-request">768</property>
                             <property name="visible">True</property>
@@ -172,7 +174,7 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">6</property>
                 <child>
-                  <object class="GtkComboBoxText" id="comboboxModele">
+                  <object class="GtkComboBoxText" id="_comboBoxModels">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
@@ -188,6 +190,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <signal name="clicked" handler="OnButtonChangeLightSourceClicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -213,7 +216,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="labelTrybEdycji">
+                      <object class="GtkLabel" id="_labelEditMode">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Przesuwanie</property>
@@ -232,7 +235,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="checkbuttonSiatkaPodlogi">
+                  <object class="GtkCheckButton" id="_checkButtonFloorMesh">
                     <property name="label" translatable="yes">Siatka podłogi</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -246,7 +249,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="checkbuttonSiatka">
+                  <object class="GtkCheckButton" id="_checkButtonMesh">
                     <property name="label" translatable="yes">Siatka</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

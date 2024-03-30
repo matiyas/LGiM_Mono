@@ -1,34 +1,45 @@
 using System;
-using Gtk;
-using Engine3D;
 using Gdk;
+using Gtk;
 using MathNet.Spatial.Euclidean;
 using UI = Gtk.Builder.ObjectAttribute;
 
-[Flags] public enum State { none = 0, lpm = 1, ppm = 2, shift = 4 };
-public enum Tryb { Przesuwanie, Skalowanie, Obracanie };
+namespace Engine3D;
+
+[Flags] public enum State
+{
+  none = 0,
+  lpm = 1,
+  ppm = 2,
+  shift = 4
+};
+
+public enum Mode
+{
+  Move,
+  Scaling,
+  Rotating
+};
 
 public partial class MainWindow : Gtk.Window
 {
-  static Color Black = new Color(0, 0, 0);
-  static Color Green = new Color(0, 255, 0);
-  static Color White = new Color(255, 255, 255);
-  static Color Gray = new Color(127, 127, 127);
-  static Color Blue = new Color(0, 0, 255);
-  static Color Red = new Color(255, 0, 0);
+  private static Color _black = new(0, 0, 0);
+  private static Color _green = new(0, 255, 0);
+  private static Color _gray = new(127, 127, 127);
+  private static Color _blue = new(0, 0, 255);
+  private static Color _red = new(255, 0, 0);
 
-  Scena scena;
-  Point lpm0, ppm0;
-  double czuloscMyszy;
-  Tryb tryb;
-  State stan;
+  private readonly Scena _scene;
+  private readonly double _mouseSensitivity;
+  private Point _leftMouseBtn, _rightMouseBtn;
+  private Mode _mode;
+  private State _state;
 
-  [UI] private Label labelTrybEdycji = null;
-  [UI] private EventBox eventboxEkran = null;
-  [UI] private Image imageEkran = null;
-  [UI] private CheckButton checkbuttonSiatka = null;
-  [UI] private CheckButton checkbuttonSiatkaPodlogi = null;
-  [UI] private ComboBoxText comboboxModele = null;
+  [UI] private readonly Label _labelEditMode = null;
+  [UI] private readonly Image _imageScreen = null;
+  [UI] private readonly CheckButton _checkButtonMesh = null;
+  [UI] private readonly CheckButton _checkButtonFloorMesh = null;
+  [UI] private readonly ComboBoxText _comboBoxModels = null;
 
   public MainWindow() : this(new Builder("MainWindow.glade")) { }
 
@@ -36,22 +47,24 @@ public partial class MainWindow : Gtk.Window
   {
     builder.Autoconnect(this);
 
-    stan = global::State.none;
-    czuloscMyszy = 0.3;
-    labelTrybEdycji.Text = tryb.ToString();
-    comboboxModele.Active = 0;
-    string sciezkaTlo = @"background.jpg";
-    scena = new Scena(sciezkaTlo, GetImageDimensions(sciezkaTlo), 1000, 100)
+    _state = Engine3D.State.none;
+    _mouseSensitivity = 0.3;
+    _labelEditMode.Text = _mode.ToString();
+    _comboBoxModels.Active = 0;
+
+    var backgroundPath = @"background.jpg";
+    _scene = new Scena(backgroundPath, GetImageDimensions(backgroundPath), 1000, 100)
     {
-      KolorPedzla = Green,
-      KolorTla = Black,
+      KolorPedzla = _green,
+      KolorTla = _black,
     };
 
-    WczytajModel(@"modele/monkey.obj", @"tekstury/sun.jpg");
-    WczytajModel(@"modele/monkey.obj", @"tekstury/earth.jpg");
-    scena.Swiat[1].Przesun(new Vector3D(500, 0, 0));
-    scena.Swiat[1].Skaluj(new Vector3D(-50, -50, -50));
-    scena.ZrodloSwiatlaIndeks = 0;
+    LoadModel(@"modele/monkey.obj", @"tekstury/sun.jpg");
+    LoadModel(@"modele/monkey.obj", @"tekstury/earth.jpg");
+
+    _scene.Swiat[1].Przesun(new Vector3D(500, 0, 0));
+    _scene.Swiat[1].Skaluj(new Vector3D(-50, -50, -50));
+    _scene.ZrodloSwiatlaIndeks = 0;
 
     GLib.Timeout.Add(50, new GLib.TimeoutHandler(OnUpdate));
 
@@ -67,8 +80,10 @@ public partial class MainWindow : Gtk.Window
 
   protected bool OnUpdate()
   {
-    scena.ZrodloSwiatla = scena.Swiat[scena.ZrodloSwiatlaIndeks].VertexCoords.ZnajdzSrodek();
-    RysujNaEkranie();
+    _scene.ZrodloSwiatla = _scene.Swiat[_scene.ZrodloSwiatlaIndeks].VertexCoords.ZnajdzSrodek();
+
+    DrawOnScreen();
+
     return true;
   }
 
@@ -78,247 +93,399 @@ public partial class MainWindow : Gtk.Window
     a.RetVal = true;
   }
 
-  void WczytajModel(string sciezkaModel, string sciezkaTekstura)
+  void LoadModel(string modelPath, string texturePath)
   {
-    scena.Swiat.Add(new WavefrontObj(sciezkaModel));
+    _scene.Swiat.Add(new WavefrontObj(modelPath));
 
-    if (sciezkaTekstura != null)
+    if (texturePath != null)
     {
-      scena.Swiat[scena.Swiat.Count - 1].Renderowanie = new Renderowanie(sciezkaTekstura, scena);
+      _scene.Swiat[_scene.Swiat.Count - 1].Renderowanie = new Renderowanie(texturePath, _scene);
     }
-    comboboxModele.AppendText(scena.Swiat[scena.Swiat.Count - 1].Nazwa ?? "Model" + (scena.Swiat.Count - 1));
-    comboboxModele.Active = scena.Swiat.Count - 1;
-    scena.Swiat[scena.Swiat.Count - 1].Obroc(new Vector3D(Math.PI * 100, 0, 0));
+    _comboBoxModels.AppendText(_scene.Swiat[_scene.Swiat.Count - 1].Nazwa ?? "Model" + (_scene.Swiat.Count - 1));
+    _comboBoxModels.Active = _scene.Swiat.Count - 1;
+    _scene.Swiat[_scene.Swiat.Count - 1].Obroc(new Vector3D(Math.PI * 100, 0, 0));
   }
 
-  void RysujNaEkranie()
+  void DrawOnScreen()
   {
-    if (checkbuttonSiatka.Active == false) { scena.Renderuj(); }
-    else { scena.RysujSiatke(); }
-    if (checkbuttonSiatkaPodlogi.Active == true) { scena.RysujSiatkePodlogi(2000, 2000, 100, Gray, Blue, Red); }
-    imageEkran.Pixbuf = new Pixbuf(scena.BackBuffer, Colorspace.Rgb, true, 8, scena.Rozmiar.Width, scena.Rozmiar.Height, 4 * scena.Rozmiar.Width);
+    if (_checkButtonMesh.Active == false)
+    {
+      _scene.Renderuj();
+    }
+    else
+    {
+      _scene.RysujSiatke();
+    }
+
+    if (_checkButtonFloorMesh.Active == true)
+    {
+      _scene.RysujSiatkePodlogi(2000, 2000, 100, _gray, _blue, _red);
+    }
+
+    _imageScreen.Pixbuf =
+      new Pixbuf(
+        data: _scene.BackBuffer,
+        colorspace: Colorspace.Rgb,
+        has_alpha: true,
+        bits_per_sample: 8,
+        width: _scene.Rozmiar.Width,
+        height: _scene.Rozmiar.Height,
+        rowstride: 4 * _scene.Rozmiar.Width
+      );
   }
 
-  private void OnKeyPressEvent(object? sender, KeyPressEventArgs evnt)
+  private void OnKeyPressEvent(object _sender, KeyPressEventArgs eventArgs)
   {
-    switch (evnt.Event.Key)
+    switch (eventArgs.Event.Key)
     {
       case Gdk.Key.w:
-        scena.Kamera.GoForward(50);
+        _scene.Kamera.GoForward(50);
         break;
 
       case Gdk.Key.s:
-        scena.Kamera.GoForward(-50);
+        _scene.Kamera.GoForward(-50);
         break;
 
       case Gdk.Key.a:
-        scena.Kamera.GoSideways(50);
+        _scene.Kamera.GoSideways(50);
         break;
 
       case Gdk.Key.d:
-        scena.Kamera.GoSideways(-50);
+        _scene.Kamera.GoSideways(-50);
         break;
 
       case Gdk.Key.q:
-        scena.Kamera.GoUpward(50);
+        _scene.Kamera.GoUpward(50);
         break;
 
       case Gdk.Key.z:
-        scena.Kamera.GoUpward(-50);
+        _scene.Kamera.GoUpward(-50);
         break;
 
       case Gdk.Key.Key_1:
-        tryb = Tryb.Przesuwanie;
-        labelTrybEdycji.Text = tryb.ToString();
+        _mode = Mode.Move;
+        _labelEditMode.Text = _mode.ToString();
         break;
 
       case Gdk.Key.Key_2:
-        tryb = Tryb.Skalowanie;
-        labelTrybEdycji.Text = tryb.ToString();
+        _mode = Mode.Scaling;
+        _labelEditMode.Text = _mode.ToString();
         break;
 
       case Gdk.Key.Key_3:
-        tryb = Tryb.Obracanie;
-        labelTrybEdycji.Text = tryb.ToString();
+        _mode = Mode.Rotating;
+        _labelEditMode.Text = _mode.ToString();
         break;
 
       case Gdk.Key.Shift_L:
-        stan |= global::State.shift;
+        _state |= Engine3D.State.shift;
         break;
     }
   }
 
-  protected override bool OnKeyReleaseEvent(EventKey evnt)
+  protected override bool OnKeyReleaseEvent(EventKey eventKey)
   {
-    if (evnt.Key == Gdk.Key.Shift_L) { stan &= ~global::State.shift; }
-
-    return base.OnKeyReleaseEvent(evnt);
-  }
-
-  protected void OnZastapActionActivated(object sender, EventArgs e)
-  {
-    FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
-                           "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
-    fc.Filter = new FileFilter();
-    fc.Filter.AddPattern("*.obj");
-
-    if (fc.Run() == (int)ResponseType.Ok)
+    if (eventKey.Key == Gdk.Key.Shift_L)
     {
-      var model = new WavefrontObj(fc.Filename);
-      model.Obroc(new Vector3D(Math.PI * 100, 0, 0));
-      model.Renderowanie = scena.Swiat[comboboxModele.Active].Renderowanie;
-
-      int tmp = comboboxModele.Active;
-      scena.Swiat[comboboxModele.Active] = model;
-      comboboxModele.AppendText(model.Nazwa);
-      comboboxModele.Active = tmp;
+      _state &= ~Engine3D.State.shift;
     }
 
-    fc.Destroy();
+    return base.OnKeyReleaseEvent(eventKey);
   }
 
-  protected void OnWczytajNowyActionActivated(object sender, EventArgs e)
+  protected void OnReplaceModelActionActivated(object _sender, EventArgs e)
   {
-    FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
-                                                 "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
-    fc.Filter = new FileFilter();
-    fc.Filter.AddPattern("*.obj");
-
-    if (fc.Run() == (int)ResponseType.Ok)
-    {
-      WczytajModel(fc.Filename, null);
-    }
-
-    fc.Destroy();
-  }
-
-  protected void OnWczytajActionActivated(object sender, EventArgs e)
-  {
-    FileChooserDialog fc = new FileChooserDialog("Wybierz model", this, FileChooserAction.Open,
-                           "Anuluj", ResponseType.Cancel, "Otwórz", ResponseType.Ok);
-    fc.Filter = new FileFilter();
-    fc.Filter.AddPattern("*.jpg");
-    fc.Filter.AddPattern("*.jpeg");
-    fc.Filter.AddPattern("*.jpe");
-    fc.Filter.AddPattern("*.png");
-    fc.Filter.AddPattern("*.bmp");
-    fc.Filter.AddPattern("*.tif");
-
-    if (fc.Run() == (int)ResponseType.Ok)
-    {
-      scena.Swiat[comboboxModele.Active].Renderowanie = new Renderowanie(fc.Filename, scena);
-    }
-
-    fc.Destroy();
-  }
-
-  protected void OnSterowanieActionActivated(object sender, EventArgs e)
-  {
-  }
-
-  protected void OnButtonZmienZrodloSwiatlaClicked(object sender, EventArgs e)
-  {
-    scena.ZrodloSwiatlaIndeks = comboboxModele.Active;
-  }
-
-  protected void OnEventboxEkranMotionNotifyEvent(object o, MotionNotifyEventArgs args)
-  {
-    if ((stan & global::State.lpm) != 0)
-    {
-      if ((stan & global::State.shift) != 0)
+    var fileChooser =
+      new FileChooserDialog(
+        title: "Wybierz model",
+        parent: this,
+        action: FileChooserAction.Open,
+        button_data:
+        (
+          "Anuluj", ResponseType.Cancel,
+          "Otwórz", ResponseType.Ok
+        )
+      )
       {
+        Filter = new FileFilter()
+      };
 
-        scena.Kamera.Rotate(new Vector3D(0, 0, -(lpm0.X - args.Event.X) / 2));
+    fileChooser.Filter.AddPattern("*.obj");
+
+    if (fileChooser.Run() == (int)ResponseType.Ok)
+    {
+      var model = new WavefrontObj(fileChooser.Filename);
+      model.Obroc(new Vector3D(Math.PI * 100, 0, 0));
+      model.Renderowanie = _scene.Swiat[_comboBoxModels.Active].Renderowanie;
+
+      var tmp = _comboBoxModels.Active;
+      _scene.Swiat[_comboBoxModels.Active] = model;
+      _comboBoxModels.AppendText(model.Nazwa);
+      _comboBoxModels.Active = tmp;
+    }
+
+    fileChooser.Destroy();
+  }
+
+  protected void OnLoadNewModelActionActivated(object _sender, EventArgs eventArgs)
+  {
+    var fileChooser =
+      new FileChooserDialog(
+        title: "Wybierz model",
+        parent: this,
+        action: FileChooserAction.Open,
+        button_data:
+        (
+          "Anuluj", ResponseType.Cancel,
+          "Otwórz", ResponseType.Ok
+        )
+      )
+      {
+        Filter = new FileFilter()
+      };
+
+    fileChooser.Filter.AddPattern("*.obj");
+
+    if (fileChooser.Run() == (int)ResponseType.Ok)
+    {
+      LoadModel(fileChooser.Filename, null);
+    }
+
+    fileChooser.Destroy();
+  }
+
+  protected void OnLoadTextureActionActivated(object _sender, EventArgs eventArgs)
+  {
+    var fileChooser =
+      new FileChooserDialog(
+        title: "Wybierz model",
+        parent: this,
+        action: FileChooserAction.Open,
+        button_data:
+        (
+          "Anuluj", ResponseType.Cancel,
+          "Otwórz", ResponseType.Ok
+        )
+      )
+      {
+        Filter = new FileFilter()
+      };
+
+    fileChooser.Filter.AddPattern("*.jpg");
+    fileChooser.Filter.AddPattern("*.jpeg");
+    fileChooser.Filter.AddPattern("*.jpe");
+    fileChooser.Filter.AddPattern("*.png");
+    fileChooser.Filter.AddPattern("*.bmp");
+    fileChooser.Filter.AddPattern("*.tif");
+
+    if (fileChooser.Run() == (int)ResponseType.Ok)
+    {
+      _scene.Swiat[_comboBoxModels.Active].Renderowanie =
+        new Renderowanie(
+          path: fileChooser.Filename,
+          drawer: _scene
+        );
+    }
+
+    fileChooser.Destroy();
+  }
+
+  protected void OnButtonChangeLightSourceClicked(object _sender, EventArgs _eventArgs)
+  {
+    _scene.ZrodloSwiatlaIndeks = _comboBoxModels.Active;
+  }
+
+  protected void OnEventBoxScreenMotionNotifyEvent(object _sender, MotionNotifyEventArgs eventArgs)
+  {
+    if ((_state & Engine3D.State.lpm) != 0)
+    {
+      if ((_state & Engine3D.State.shift) != 0)
+      {
+        var rotateVector =
+          new Vector3D(
+            x: 0,
+            y: 0,
+            z: -(_leftMouseBtn.X - eventArgs.Event.X) / 2
+          );
+
+        _scene.Kamera.Rotate(rotateVector);
       }
       else
       {
-        scena.Kamera.Rotate(new Vector3D(-(lpm0.Y - args.Event.Y) * czuloscMyszy,
-          (lpm0.X - args.Event.X) * czuloscMyszy, 0));
+        var rotateVector =
+          new Vector3D(
+            x: -(_leftMouseBtn.Y - eventArgs.Event.Y) * _mouseSensitivity,
+            y: (_leftMouseBtn.X - eventArgs.Event.X) * _mouseSensitivity,
+            z: 0
+          );
+
+        _scene.Kamera.Rotate(rotateVector);
       }
 
-      lpm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+      _leftMouseBtn =
+        new Point(
+          x: (int)eventArgs.Event.X,
+          y: (int)eventArgs.Event.Y
+        );
     }
 
-    if ((stan & global::State.ppm) != 0)
+    if ((_state & Engine3D.State.ppm) != 0)
     {
-      Point ile = new Point(-(int)(ppm0.X - args.Event.X), -(int)(ppm0.Y - args.Event.Y));
-      switch (tryb)
+      var value =
+        new Point(
+          x: -(int)(_rightMouseBtn.X - eventArgs.Event.X),
+          y: -(int)(_rightMouseBtn.Y - eventArgs.Event.Y)
+        );
+
+      switch (_mode)
       {
-        case Tryb.Przesuwanie:
-          if ((stan & global::State.shift) != 0)
+        case Mode.Move:
+          if ((_state & Engine3D.State.shift) != 0)
           {
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(-ile.Y * scena.Kamera.Forward.X * 3,
-  -ile.Y * scena.Kamera.Forward.Y * 3, -ile.Y * scena.Kamera.Forward.Z * 3));
+            var moveVector =
+              new Vector3D(
+                x: -value.Y * _scene.Kamera.Forward.X * 3,
+                y: -value.Y * _scene.Kamera.Forward.Y * 3,
+                z: -value.Y * _scene.Kamera.Forward.Z * 3
+              );
+
+            _scene.Swiat[_comboBoxModels.Active].Przesun(moveVector);
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.X * scena.Kamera.Right.X * 3,
-              ile.X * scena.Kamera.Right.Y * 3, ile.X * scena.Kamera.Right.Z * 3));
-            scena.Swiat[comboboxModele.Active].Przesun(new Vector3D(ile.Y * scena.Kamera.Upward.X * 3,
-              ile.Y * scena.Kamera.Upward.Y * 3, ile.Y * scena.Kamera.Upward.Z * 3));
+            var moveVectorX =
+              new Vector3D(
+                x: value.X * _scene.Kamera.Right.X * 3,
+                y: value.X * _scene.Kamera.Right.Y * 3,
+                z: value.X * _scene.Kamera.Right.Z * 3
+              );
+            var moveVectorY =
+              new Vector3D(
+                x: value.Y * _scene.Kamera.Upward.X * 3,
+                y: value.Y * _scene.Kamera.Upward.Y * 3,
+                z: value.Y * _scene.Kamera.Upward.Z * 3
+              );
+
+            _scene.Swiat[_comboBoxModels.Active].Przesun(moveVectorX);
+            _scene.Swiat[_comboBoxModels.Active].Przesun(moveVectorY);
           }
           break;
 
-        case Tryb.Skalowanie:
-          if ((stan & global::State.shift) != 0)
+        case Mode.Scaling:
+          if ((_state & Engine3D.State.shift) != 0)
           {
-            double s = Math.Sqrt(Math.Pow(ile.X - ile.Y, 2)) * Math.Sign(ile.X - ile.Y) / 2;
-            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(s, s, s));
+            var scaleValue =
+              Math.Sqrt(Math.Pow(value.X - value.Y, 2)) *
+              Math.Sign(value.X - value.Y) /
+              2;
+            var scaleVector =
+              new Vector3D(
+                x: scaleValue,
+                y: scaleValue,
+                z: scaleValue
+              );
+
+            _scene.Swiat[_comboBoxModels.Active].Skaluj(scaleVector);
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(ile.X * scena.Kamera.Right.X,
-              ile.X * scena.Kamera.Right.Y, ile.X * scena.Kamera.Right.Z));
-            scena.Swiat[comboboxModele.Active].Skaluj(new Vector3D(-ile.Y * scena.Kamera.Upward.X,
-              -ile.Y * scena.Kamera.Upward.Y, -ile.Y * scena.Kamera.Upward.Z));
+            var scaleVectorX =
+              new Vector3D(
+                x: value.X * _scene.Kamera.Right.X,
+                y: value.X * _scene.Kamera.Right.Y,
+                z: value.X * _scene.Kamera.Right.Z
+              );
+            var scaleVectorY =
+              new Vector3D(
+                x: -value.Y * _scene.Kamera.Upward.X,
+                y: -value.Y * _scene.Kamera.Upward.Y,
+                z: -value.Y * _scene.Kamera.Upward.Z
+              );
+
+            _scene.Swiat[_comboBoxModels.Active].Skaluj(scaleVectorX);
+            _scene.Swiat[_comboBoxModels.Active].Skaluj(scaleVectorY);
           }
           break;
 
-        case Tryb.Obracanie:
-          if ((stan & global::State.shift) != 0)
+        case Mode.Rotating:
+          if ((_state & Engine3D.State.shift) != 0)
           {
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.X, scena.Kamera.Forward,
-              scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
+            _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
+              phi: value.X,
+              axis: _scene.Kamera.Forward,
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+            );
           }
           else
           {
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(-ile.X, scena.Kamera.Upward,
-              scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
-
-            scena.Swiat[comboboxModele.Active].ObrocWokolOsi(ile.Y, scena.Kamera.Right,
-              scena.Swiat[comboboxModele.Active].VertexCoords.ZnajdzSrodek());
+            _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
+              phi: -value.X,
+              axis: _scene.Kamera.Upward,
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+            );
+            _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
+              phi: value.Y,
+              axis: _scene.Kamera.Right,
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+            );
           }
           break;
       }
     }
 
-    ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
+    _rightMouseBtn =
+      new Point(
+        x: (int)eventArgs.Event.X,
+        y: (int)eventArgs.Event.Y
+      );
   }
 
-  protected void OnEventboxEkranButtonPressEvent(object o, ButtonPressEventArgs args)
+  protected void OnEventBoxScreenBtnPressEvent(object o, ButtonPressEventArgs args)
   {
     if (args.Event.Button == 1)
     {
-      lpm0 = new Point((int)args.Event.X, (int)args.Event.Y);
-      stan |= global::State.lpm;
+      _leftMouseBtn =
+        new Point(
+          x: (int)args.Event.X,
+          y: (int)args.Event.Y
+        );
+      _state |= Engine3D.State.lpm;
     }
 
     if (args.Event.Button == 3)
     {
-      ppm0 = new Point((int)args.Event.X, (int)args.Event.Y);
-      stan |= global::State.ppm;
+      _rightMouseBtn =
+        new Point(
+          x: (int)args.Event.X,
+          y: (int)args.Event.Y
+        );
+      _state |= Engine3D.State.ppm;
     }
   }
 
-  protected void OnEventboxEkranButtonReleaseEvent(object o, ButtonReleaseEventArgs args)
+  protected void OnEventBoxScreenBtnReleaseEvent(object _sender, ButtonReleaseEventArgs eventArgs)
   {
-    if (args.Event.Button == 1) { stan &= ~global::State.lpm; }
-    if (args.Event.Button == 3) { stan &= ~global::State.ppm; }
+    if (eventArgs.Event.Button == 1)
+    {
+      _state &= ~Engine3D.State.lpm;
+    }
+
+    if (eventArgs.Event.Button == 3)
+    {
+      _state &= ~Engine3D.State.ppm;
+    }
   }
 
-  protected void OnEventboxEkranScrollEvent(object o, ScrollEventArgs args)
+  protected void OnEventBoxScreenScrollEvent(object _sender, ScrollEventArgs eventArgs)
   {
-    if (args.Event.Direction == ScrollDirection.Down) { scena.Odleglosc += 100; }
-    else if (args.Event.Direction == ScrollDirection.Up) { scena.Odleglosc -= 100; }
+    if (eventArgs.Event.Direction == ScrollDirection.Down)
+    {
+      _scene.Odleglosc += 100;
+    }
+    else if (eventArgs.Event.Direction == ScrollDirection.Up)
+    {
+      _scene.Odleglosc -= 100;
+    }
   }
 }
+

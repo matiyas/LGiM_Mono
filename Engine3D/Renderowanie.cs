@@ -11,15 +11,14 @@ namespace Engine3D;
 class Renderowanie
 {
   Scena rysownik;
-  Drawing.Size rozmiarTekstury;
   SixLabors.ImageSharp.Color[,] teksturaKolory;
 
   Image<Rgb24> bmp;
 
-  public Renderowanie(string sciezka, Scena rysownik)
+  public Renderowanie(string path, Scena drawer)
   {
-    bmp = Image.Load(sciezka).CloneAs<Rgb24>();
-    this.rysownik = rysownik;
+    bmp = Image.Load(path).CloneAs<Rgb24>();
+    this.rysownik = drawer;
     teksturaKolory = new SixLabors.ImageSharp.Color[bmp.Width, bmp.Height];
     for (int y = 0; y < bmp.Height; ++y)
     {
