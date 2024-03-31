@@ -6,47 +6,47 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="**\*.glade" />
-    <EmbeddedResource Include="**\*.glade">
+    <None Remove="**/*.glade" />
+    <EmbeddedResource Include="**/*.glade">
       <LogicalName>%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <None Include="background.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\earth.jpg">
+    <None Include="Assets/Textures/earth.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\jupiter.jpg">
+    <None Include="Assets/Textures/jupiter.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\mars.jpg">
+    <None Include="Assets/Textures/mars.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\mercury.jpg">
+    <None Include="Assets/Textures/mercury.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\neptun.jpg">
+    <None Include="Assets/Textures/neptun.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\saturn.jpg">
+    <None Include="Assets/Textures/saturn.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\stars.jpg">
+    <None Include="Assets/Textures/stars.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\sun.jpg">
+    <None Include="Assets/Textures/sun.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\uran.jpg">
+    <None Include="Assets/Textures/uran.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\venus.jpg">
+    <None Include="Assets/Textures/venus.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Textures\world.jpg">
+    <None Include="Assets/Textures/world.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Models\monkey.obj">
+    <None Include="Assets/Models/monkey.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
