@@ -161,10 +161,10 @@ class Scena
       {
         var wierzcholki = new Vector3D[]
         {
-                        new Vector3D(x, 0, z).RzutPerspektywiczny(Odleglosc, srodek, Kamera),
-                        new Vector3D(x + skok, 0, z).RzutPerspektywiczny(Odleglosc, srodek, Kamera),
-                        new Vector3D(x + skok, 0, z + skok).RzutPerspektywiczny(Odleglosc, srodek, Kamera),
-                        new Vector3D(x, 0, z + skok).RzutPerspektywiczny(Odleglosc, srodek, Kamera)
+                        new Vector3D(x, 0, z).PerspectiveView(Odleglosc, srodek, Kamera),
+                        new Vector3D(x + skok, 0, z).PerspectiveView(Odleglosc, srodek, Kamera),
+                        new Vector3D(x + skok, 0, z + skok).PerspectiveView(Odleglosc, srodek, Kamera),
+                        new Vector3D(x, 0, z + skok).PerspectiveView(Odleglosc, srodek, Kamera)
         };
 
         for (int i = 0; i < wierzcholki.Length; ++i)
@@ -190,7 +190,7 @@ class Scena
 
     foreach (WavefrontObj model in Swiat)
     {
-      Vector3D[] modelRzut = model.VertexCoords.RzutPerspektywiczny(Odleglosc, srodek, Kamera);
+      Vector3D[] modelRzut = model.VertexCoords.PerspectiveView(Odleglosc, srodek, Kamera);
 
       foreach (Sciana sciana in model.Sciany)
       {
@@ -209,8 +209,8 @@ class Scena
 
     foreach (WavefrontObj model in Swiat)
     {
-      Vector3D[] modelRzut = Math3D.RzutPerspektywiczny(model.VertexCoords, Odleglosc, srodek, Kamera);
-      Vector3D srodekObiektu = model.VertexNormalsCoords.ZnajdzSrodek();
+      Vector3D[] modelRzut = Math3D.PerspectiveView(model.VertexCoords, Odleglosc, srodek, Kamera);
+      Vector3D srodekObiektu = model.VertexNormalsCoords.FindCenter();
 
       if (model.Sciany == null || modelRzut == null || model.Renderowanie == null) { continue; }
 

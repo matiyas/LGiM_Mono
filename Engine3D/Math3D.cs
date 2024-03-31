@@ -1,198 +1,397 @@
 ﻿using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
-using static System.Math;
 using MathNet.Spatial.Euclidean;
+using static System.Math;
 
 namespace Engine3D;
 
 static class Math3D
 {
-  public static Vector3D ZnajdzSrodek(this Vector3D[] wierzcholki)
+  public static Vector3D FindCenter(this Vector3D[] vertices)
   {
-    return new Vector3D((wierzcholki.Max(v => v.X) + wierzcholki.Min(v => v.X)) / 2,
-        (wierzcholki.Max(v => v.Y) + wierzcholki.Min(v => v.Y)) / 2, (wierzcholki.Max(v => v.Z) + wierzcholki.Min(v => v.Z)) / 2);
+    return new Vector3D(
+      x: (vertices.Max(v => v.X) + vertices.Min(v => v.X)) / 2,
+      y: (vertices.Max(v => v.Y) + vertices.Min(v => v.Y)) / 2,
+      z: (vertices.Max(v => v.Z) + vertices.Min(v => v.Z)) / 2
+    );
   }
 
-  public static Vector3D[] Translacja(this Vector3D[] wierzcholki, Vector3D t)
+  public static Vector3D[] Transform(this Vector3D[] vertices, Vector3D translation)
   {
-    var wierzcholkiMod = new Vector3D[wierzcholki.Length];
+    var transformedVertices = new Vector3D[vertices.Length];
+    var translationMatrix =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, translation.X,
+          0, 1, 0, translation.Y,
+          0, 0, 1, translation.Z,
+          0, 0, 0, 1
+        }
+      );
 
-    var T = new DenseMatrix(4, 4, new double[]{ 1,  0,  0, t.X,
-                                                      0,  1,  0, t.Y,
-                                                      0,  0,  1, t.Z,
-                                                      0,  0,  0,   1,});
-    for (int i = 0; i < wierzcholki.Length; ++i)
+    for (int i = 0; i < vertices.Length; ++i)
     {
-      var wierzcholekMod = new DenseVector(new double[] { wierzcholki[i].X, wierzcholki[i].Y, wierzcholki[i].Z, 1 }) * T;
-      wierzcholkiMod[i] = new Vector3D(wierzcholekMod[0], wierzcholekMod[1], wierzcholekMod[2]);
+      var vectorWithHomogeneousCoordsStorage =
+        new double[]
+        {
+          vertices[i].X,
+          vertices[i].Y,
+          vertices[i].Z,
+          1
+        };
+      var vectorWithHomogeneousCoords = new DenseVector(vectorWithHomogeneousCoordsStorage);
+      var transformedVector = vectorWithHomogeneousCoords * translationMatrix;
+
+      transformedVertices[i] =
+        new Vector3D(
+          x: transformedVector[0],
+          y: transformedVector[1],
+          z: transformedVector[2]
+        );
     }
 
-    return wierzcholkiMod;
+    return transformedVertices;
   }
 
-  public static Vector3D[] Rotacja(this Vector3D[] wierzcholki, Vector3D kat, Vector3D srodek)
+  public static Vector3D[] Rotate(this Vector3D[] vertices, Vector3D angle, Vector3D center)
   {
-    kat = new Vector3D(kat.X / 100, kat.Y / 100, kat.Z / 100);
+    var transformedAngle =
+      new Vector3D(
+        x: +angle.X / 100,
+        y: angle.Y / 100,
+        z: angle.Z / 100
+      );
+    var transformedVertices = new Vector3D[vertices.Length];
+    var transformationMatrix1 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, -center.X,
+          0, 1, 0, -center.Y,
+          0, 0, 1, -center.Z,
+          0, 0, 0, 1
+        }
+      );
+    var transformationMatrix2 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, center.X,
+          0, 1, 0, center.Y,
+          0, 0, 1, center.Z,
+          0, 0, 0, 1
+        }
+      );
+    var rotationMatrixX =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, 0,
+          0, Cos(transformedAngle.X), -Sin(transformedAngle.X), 0,
+          0, Sin(transformedAngle.X), Cos(transformedAngle.X), 0,
+          0, 0, 0, 1
+        }
+      );
+    var rotationMatrixY =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          Cos(transformedAngle.Y), 0, Sin(transformedAngle.Y), 0,
+          0, 1, 0, 0,
+          -Sin(transformedAngle.Y), 0, Cos(transformedAngle.Y), 0,
+          0, 0, 0, 1
+        }
+      );
+    var rotationMatrixZ =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          Cos(transformedAngle.Z), -Sin(transformedAngle.Z), 0, 0,
+          Sin(transformedAngle.Z), Cos(transformedAngle.Z), 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1
+        }
+      );
 
-    var wierzcholkiMod = new Vector3D[wierzcholki.Length];
-
-    var T0 = new DenseMatrix(4, 4, new double[]{    1,       0,     0,      -srodek.X,
-                              0,       1,     0,      -srodek.Y,
-                              0,       0,     1,      -srodek.Z,
-                              0,       0,     0,         1, });
-
-    var T1 = new DenseMatrix(4, 4, new double[]{    1,       0,     0,       srodek.X,
-                              0,       1,     0,       srodek.Y,
-                              0,       0,     1,       srodek.Z,
-                              0,       0,     0,         1, });
-
-    var Rx = new DenseMatrix(4, 4, new double[]{    1,       0,       0,     0,
-                                0,  Cos(kat.X), -Sin(kat.X),     0,
-                              0,  Sin(kat.X),  Cos(kat.X),     0,
-                              0,       0,       0,     1, });
-
-    var Ry = new DenseMatrix(4, 4, new double[]{Cos(kat.Y),     0,   Sin(kat.Y),     0,
-                                0,     1,        0,     0,
-                            -Sin(kat.Y),     0,   Cos(kat.Y),     0,
-                                0,     0,        0,     1, });
-
-    var Rz = new DenseMatrix(4, 4, new double[]{Cos(kat.Z), -Sin(kat.Z),      0,     0,
-                          Sin(kat.Z),  Cos(kat.Z),      0,     0,
-                                0,       0,      1,     0,
-                                0,       0,      0,     1, });
-
-    for (int i = 0; i < wierzcholki.Length; ++i)
+    for (int i = 0; i < vertices.Length; ++i)
     {
-      var wierzcholekMod = new DenseVector(new double[] { wierzcholki[i].X, wierzcholki[i].Y, wierzcholki[i].Z, 1 }) * T0;
+      var vertexWithHomogeneousCoordsStorage =
+        new double[]
+        {
+          vertices[i].X,
+          vertices[i].Y,
+          vertices[i].Z,
+          1
+        };
+      var transformedVertex = new DenseVector(vertexWithHomogeneousCoordsStorage) * transformationMatrix1;
 
-      if (kat.X.CompareTo(0) != 0) wierzcholekMod *= Rx;
-      if (kat.Y.CompareTo(0) != 0) wierzcholekMod *= Ry;
-      if (kat.Z.CompareTo(0) != 0) wierzcholekMod *= Rz;
+      if (angle.X.CompareTo(0) != 0) transformedVertex *= rotationMatrixX;
+      if (angle.Y.CompareTo(0) != 0) transformedVertex *= rotationMatrixY;
+      if (angle.Z.CompareTo(0) != 0) transformedVertex *= rotationMatrixZ;
 
-      wierzcholekMod *= T1;
-      wierzcholkiMod[i] = new Vector3D(wierzcholekMod[0], wierzcholekMod[1], wierzcholekMod[2]);
+      transformedVertex *= transformationMatrix2;
+      transformedVertices[i] =
+        new Vector3D(
+          x: transformedVertex[0],
+          y: transformedVertex[1],
+          z: transformedVertex[2]
+        );
     }
 
-    return wierzcholkiMod;
+    return transformedVertices;
   }
 
-  public static Vector3D[] Skalowanie(this Vector3D[] wierzcholki, Vector3D kat)
+  public static Vector3D[] Scaling(this Vector3D[] vertices, Vector3D angle)
   {
-    double tmpX = kat.X, tmpY = kat.Y, tmpZ = kat.Z, x, y, z;
-    var wierzcholkiMod = new Vector3D[wierzcholki.Length];
+    var tmpX = angle.X;
+    var tmpY = angle.Y;
+    var tmpZ = angle.Z;
+    angle =
+      new Vector3D(
+        x: angle.X / 100.0,
+        y: angle.Y / 100.0,
+        z: angle.Z / 100
+      );
+    angle =
+      new Vector3D(
+        x: (tmpX >= 0 || angle.X < 1.0) ? (angle.X + 1) : (1.0 / angle.X),
+        y: (tmpY >= 0 || angle.Y < 1.0) ? (angle.Y + 1) : (1.0 / angle.Y),
+        z: (tmpZ >= 0 || angle.Z < 1.0) ? (angle.Z + 1) : (1.0 / angle.Z)
+      );
+    var transformedVertices = new Vector3D[vertices.Length];
+    var centerVertex = vertices.FindCenter();
+    var transformationMatrix1 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, -centerVertex.X,
+          0, 1, 0, -centerVertex.Y,
+          0, 0, 1, -centerVertex.Z,
+          0, 0, 0, 1
+        }
+      );
+    var transformationMatrix2 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, centerVertex.X,
+          0, 1, 0, centerVertex.Y,
+          0, 0, 1, centerVertex.Z,
+          0, 0, 0, 1
+        }
+      );
+    var scaleMatrix =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          angle.X, 0, 0, 0,
+          0, angle.Y, 0, 0,
+          0, 0, angle.Z, 0,
+          0, 0, 0, 1
+        }
+      );
 
-    kat = new Vector3D(kat.X / 100.0, kat.Y / 100.0, kat.Z / 100);
-
-    if (tmpX >= 0 || kat.X < 1.0) x = kat.X + 1;
-    else x = 1.0 / kat.X;
-
-    if (tmpY >= 0 || kat.Y < 1.0) y = kat.Y + 1;
-    else y = 1.0 / kat.Y;
-
-    if (tmpZ >= 0 || kat.Z < 1.0) z = kat.Z + 1;
-    else z = 1.0 / kat.Z;
-
-    kat = new Vector3D(x, y, z);
-
-    Vector3D c = wierzcholki.ZnajdzSrodek();
-
-    var T0 = new DenseMatrix(4, 4, new double[]{ 1, 0, 0, -c.X,
-                                                        0, 1, 0, -c.Y,
-                                                        0, 0, 1, -c.Z,
-                                                        0, 0, 0,    1, });
-
-    var T1 = new DenseMatrix(4, 4, new double[]{ 1, 0, 0,  c.X,
-                            0, 1, 0,  c.Y,
-                            0, 0, 1,  c.Z,
-                            0, 0, 0,  1, });
-
-    var S = new DenseMatrix(4, 4, new double[]{ kat.X,  0,  0, 0,
-                            0, kat.Y,  0, 0,
-                            0,  0, kat.Z, 0,
-                            0,  0,  0,  1, });
-
-    for (int i = 0; i < wierzcholki.Length; ++i)
+    for (int i = 0; i < vertices.Length; ++i)
     {
-      var p = new DenseVector(new double[] { wierzcholki[i].X, wierzcholki[i].Y, wierzcholki[i].Z, 1 }) * T0 * S * T1;
-      wierzcholkiMod[i] = new Vector3D(p[0], p[1], p[2]);
+      var vectorWithHomogeneousCoordsStorage =
+        new double[]
+        {
+          vertices[i].X,
+          vertices[i].Y,
+          vertices[i].Z,
+          1
+        };
+      var vectorWithHomogeneousCoords = new DenseVector(vectorWithHomogeneousCoordsStorage);
+      var transformedVertex = vectorWithHomogeneousCoords * transformationMatrix1 * scaleMatrix * transformationMatrix2;
+
+      transformedVertices[i] =
+        new Vector3D(
+          x: transformedVertex[0],
+          y: transformedVertex[1],
+          z: transformedVertex[2]
+        );
     }
 
-    return wierzcholkiMod;
+    return transformedVertices;
   }
 
-  public static Vector3D RzutPerspektywiczny(this Vector3D punkt, double d, Vector2D c, Camera kamera)
+  public static Vector3D PerspectiveView(this Vector3D vertex, double distance, Vector2D center, Camera camera)
   {
-    var Proj = new DenseMatrix(4, 4, new double[]{ 1,  0,  0,  0,
-                                                          0,  1,  0,  0,
-                                                          0,  0,  1,  0,
-                                                          0,  0, 1/d, 1 });
+    var projectionMatrix =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 1 / distance, 1
+        }
+      );
+    var vectorWithHomogenousCoords = new DenseVector(new double[] { vertex.X, vertex.Y, vertex.Z, 1 });
+    var transformedPoint = vectorWithHomogenousCoords * camera.LookAt * projectionMatrix;
 
-    var p = new DenseVector(new double[] { punkt.X, punkt.Y, punkt.Z, 1 }) * kamera.LookAt * Proj;
-
-    return new Vector3D(p[0] / p[3] + c.X, p[1] / p[3] + c.Y, p[2] + d/* kalibracja */);
+    return new Vector3D(
+      x: transformedPoint[0] / transformedPoint[3] + center.X,
+      y: transformedPoint[1] / transformedPoint[3] + center.Y,
+      z: transformedPoint[2] + distance
+    );
   }
 
-  public static Vector3D[] RzutPerspektywiczny(this Vector3D[] wierzcholki, double d, Vector2D c, Camera kamera)
+  public static Vector3D[] PerspectiveView(this Vector3D[] vertices, double distance, Vector2D center, Camera camera)
   {
-    var punktyRzut = new Vector3D[wierzcholki.Length];
+    var transformedVertices = new Vector3D[vertices.Length];
 
-    for (int i = 0; i < wierzcholki.Length; ++i)
+    for (int i = 0; i < vertices.Length; ++i)
     {
-      punktyRzut[i] = RzutPerspektywiczny(wierzcholki[i], d, c, kamera);
+      transformedVertices[i] = PerspectiveView(vertices[i], distance, center, camera);
     }
 
-    return punktyRzut;
+    return transformedVertices;
   }
 
-  public static Vector3D RotateAroundAxis(Vector3D punkt, UnitVector3D os, double kat, Vector3D srodek)
+  public static Vector3D RotateAroundAxis(Vector3D vertex, UnitVector3D axis, double angle, Vector3D center)
   {
-    kat /= 100;
+    angle /= 100;
 
-    var T0 = new DenseMatrix(4, 4, new double[]{        1,           0,         0,      -srodek.X,
-                                                              0,           1,         0,      -srodek.Y,
-                                                              0,           0,         1,      -srodek.Z,
-                                                              0,           0,         0,         1, });
+    var transformationMatrix1 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, -center.X,
+          0, 1, 0, -center.Y,
+          0, 0, 1, -center.Z,
+          0, 0, 0, 1
+        }
+      );
+    var transformationMatrix2 =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new double[]
+        {
+          1, 0, 0, center.X,
+          0, 1, 0, center.Y,
+          0, 0, 1, center.Z,
+          0, 0, 0, 1
+        }
+      );
+    var rotationMatrixRow1 =
+      new double[]
+      {
+        axis.X * axis.X * (1 - Cos(angle)) + Cos(angle),
+        axis.X * axis.Y * (1 - Cos(angle)) - axis.Z * Sin(angle),
+        axis.X * axis.Z * (1 - Cos(angle)) + axis.Y * Sin(angle),
+        0
+      };
+    var rotationMatrixRow2 =
+      new double[]
+      {
+        axis.X * axis.Y * (1 - Cos(angle)) + axis.Z * Sin(angle),
+        axis.Y * axis.Y * (1 - Cos(angle)) + Cos(angle),
+        axis.Y * axis.Z * (1 - Cos(angle)) - axis.X * Sin(angle),
+        0
+      };
+    var rotationMatrixRow3 =
+      new double[]
+      {
+        axis.X * axis.Z * (1 - Cos(angle)) - axis.Y * Sin(angle),
+        axis.Y * axis.Z * (1 - Cos(angle)) + axis.X * Sin(angle),
+        axis.Z * axis.Z * (1 - Cos(angle)) + Cos(angle),
+        0
+      };
+    var rotationMatrixRow4 = new double[] { 0, 0, 0, 1 };
+    var rotationMatrix =
+      new DenseMatrix(
+        rows: 4,
+        columns: 4,
+        storage: new[]
+        {
+          rotationMatrixRow1,
+          rotationMatrixRow2,
+          rotationMatrixRow3,
+          rotationMatrixRow4
+        }.SelectMany(row => row).ToArray()
+      );
+    var vectorWithHomogeneousCoords = new DenseVector(new double[] { vertex.X, vertex.Y, vertex.Z, 1 });
+    var transformedVertex =
+      vectorWithHomogeneousCoords *
+      transformationMatrix1 *
+      rotationMatrix *
+      transformationMatrix2;
 
-    var T1 = new DenseMatrix(4, 4, new double[]{        1,           0,         0,       srodek.X,
-                                                              0,           1,         0,       srodek.Y,
-                                                              0,           0,         1,       srodek.Z,
-                                                              0,           0,         0,         1, });
+    return new Vector3D(
+      x: transformedVertex[0],
+      y: transformedVertex[1],
+      z: transformedVertex[2]
+    );
+  }
 
-    var R = new DenseMatrix(4, 4, new double[]
+  public static UnitVector3D RotateAroundAxis(UnitVector3D vertex, UnitVector3D axis, double angle)
+  {
+    var transformedVertex =
+      RotateAroundAxis(
+        vertex: new Vector3D(vertex.X, vertex.Y, vertex.Z),
+        axis: axis,
+        angle: angle,
+        center: new Vector3D(0, 0, 0)
+      );
+
+    return new Vector3D(
+      x: transformedVertex.X,
+      y: transformedVertex.Y,
+      z: transformedVertex.Z
+    ).Normalize();
+  }
+
+  public static UnitVector3D RotateAroundAxis(UnitVector3D vertex, UnitVector3D axis, double angle, Vector3D center)
+  {
+    var transformedVertex =
+      RotateAroundAxis(
+        vertex: new Vector3D(vertex.X, vertex.Y, vertex.Z),
+        axis: axis,
+        angle: angle,
+        center: center
+      );
+
+    return new Vector3D(
+      x: transformedVertex.X,
+      y: transformedVertex.Y,
+      z: transformedVertex.Z
+    ).Normalize();
+  }
+
+  public static Vector3D[] RotateAroundAxis(Vector3D[] vertices, UnitVector3D axis, double angle, Vector3D center)
+  {
+    var transformedVertices = new Vector3D[vertices.Length];
+
+    for (int i = 0; i < vertices.Length; ++i)
     {
-              os.X * os.X * (1 - Cos(kat)) + Cos(kat),            os.X * os.Y * (1 - Cos(kat)) - os.Z * Sin(kat),     os.X * os.Z * (1 - Cos(kat)) + os.Y * Sin(kat), 0,
-              os.X * os.Y * (1 - Cos(kat)) + os.Z * Sin(kat),     os.Y * os.Y * (1 - Cos(kat)) + Cos(kat),            os.Y * os.Z * (1 - Cos(kat)) - os.X * Sin(kat), 0,
-              os.X * os.Z * (1 - Cos(kat)) - os.Y * Sin(kat),     os.Y * os.Z * (1 - Cos(kat)) + os.X * Sin(kat),     os.Z * os.Z * (1 - Cos(kat)) + Cos(kat),        0,
-                                                            0,                                                  0,                                                  0, 1,
-    });
-    var p = new DenseVector(new double[] { punkt.X, punkt.Y, punkt.Z, 1 }) * T0 * R * T1;
-
-    return new Vector3D(p[0], p[1], p[2]);
-  }
-
-  public static UnitVector3D RotateAroundAxis(UnitVector3D punkt, UnitVector3D os, double kat)
-  {
-    Vector3D wynik = RotateAroundAxis(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, new Vector3D(0, 0, 0));
-
-    return new Vector3D(wynik.X, wynik.Y, wynik.Z).Normalize();
-  }
-
-  public static UnitVector3D ObrocWokolOsi(UnitVector3D punkt, UnitVector3D os, double kat, Vector3D srodek)
-  {
-    Vector3D wynik = RotateAroundAxis(new Vector3D(punkt.X, punkt.Y, punkt.Z), os, kat, srodek);
-
-    return new Vector3D(wynik.X, wynik.Y, wynik.Z).Normalize();
-  }
-
-  public static Vector3D[] ObrocWokolOsi(Vector3D[] wierzcholki, UnitVector3D os, double kat, Vector3D srodek)
-  {
-    var punktyObrot = new Vector3D[wierzcholki.Length];
-
-    for (int i = 0; i < wierzcholki.Length; ++i)
-    {
-      punktyObrot[i] = RotateAroundAxis(wierzcholki[i], os, kat, srodek);
+      transformedVertices[i] = RotateAroundAxis(vertices[i], axis, angle, center);
     }
 
-    return punktyObrot;
+    return transformedVertices;
   }
 }

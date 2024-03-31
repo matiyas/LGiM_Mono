@@ -80,7 +80,7 @@ public partial class MainWindow : Gtk.Window
 
   protected bool OnUpdate()
   {
-    _scene.ZrodloSwiatla = _scene.Swiat[_scene.ZrodloSwiatlaIndeks].VertexCoords.ZnajdzSrodek();
+    _scene.ZrodloSwiatla = _scene.Swiat[_scene.ZrodloSwiatlaIndeks].VertexCoords.FindCenter();
 
     DrawOnScreen();
 
@@ -413,7 +413,7 @@ public partial class MainWindow : Gtk.Window
             _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
               phi: value.X,
               axis: _scene.Kamera.Forward,
-              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
           }
           else
@@ -421,12 +421,12 @@ public partial class MainWindow : Gtk.Window
             _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
               phi: -value.X,
               axis: _scene.Kamera.Upward,
-              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
             _scene.Swiat[_comboBoxModels.Active].ObrocWokolOsi(
               phi: value.Y,
               axis: _scene.Kamera.Right,
-              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.ZnajdzSrodek()
+              angle: _scene.Swiat[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
           }
           break;

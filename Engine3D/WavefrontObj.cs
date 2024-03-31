@@ -207,31 +207,31 @@ class WavefrontObj
 
   public void Przesun(Vector3D t)
   {
-    VertexCoords = VertexCoords.Translacja(t);
-    VertexNormalsCoords = VertexNormalsCoords.Translacja(t);
+    VertexCoords = VertexCoords.Transform(t);
+    VertexNormalsCoords = VertexNormalsCoords.Transform(t);
   }
 
   public void Obroc(Vector3D phi)
   {
-    VertexCoords = VertexCoords.Rotacja(phi, VertexCoords.ZnajdzSrodek());
-    VertexNormalsCoords = VertexNormalsCoords.Rotacja(phi, VertexNormalsCoords.ZnajdzSrodek());
+    VertexCoords = VertexCoords.Rotate(phi, VertexCoords.FindCenter());
+    VertexNormalsCoords = VertexNormalsCoords.Rotate(phi, VertexNormalsCoords.FindCenter());
   }
 
   public void Obroc(Vector3D phi, Vector3D c)
   {
-    VertexCoords = VertexCoords.Rotacja(phi, c);
-    VertexNormalsCoords = VertexNormalsCoords.Rotacja(phi, c);
+    VertexCoords = VertexCoords.Rotate(phi, c);
+    VertexNormalsCoords = VertexNormalsCoords.Rotate(phi, c);
   }
 
   public void ObrocWokolOsi(double phi, UnitVector3D axis, Vector3D angle)
   {
-    VertexCoords = Math3D.ObrocWokolOsi(VertexCoords, axis, phi, angle);
-    VertexNormalsCoords = Math3D.ObrocWokolOsi(VertexNormalsCoords, axis, phi, angle);
+    VertexCoords = Math3D.RotateAroundAxis(VertexCoords, axis, phi, angle);
+    VertexNormalsCoords = Math3D.RotateAroundAxis(VertexNormalsCoords, axis, phi, angle);
   }
 
   public void Skaluj(Vector3D s)
   {
-    VertexCoords = VertexCoords.Skalowanie(s);
-    VertexNormalsCoords = VertexNormalsCoords.Skalowanie(s);
+    VertexCoords = VertexCoords.Scaling(s);
+    VertexNormalsCoords = VertexNormalsCoords.Scaling(s);
   }
 }
