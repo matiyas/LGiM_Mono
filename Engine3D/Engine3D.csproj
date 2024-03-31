@@ -13,40 +13,40 @@
     <None Include="background.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\earth.jpg">
+    <None Include="Textures\earth.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\jupiter.jpg">
+    <None Include="Textures\jupiter.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\mars.jpg">
+    <None Include="Textures\mars.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\mercury.jpg">
+    <None Include="Textures\mercury.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\neptun.jpg">
+    <None Include="Textures\neptun.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\saturn.jpg">
+    <None Include="Textures\saturn.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\stars.jpg">
+    <None Include="Textures\stars.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\sun.jpg">
+    <None Include="Textures\sun.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\uran.jpg">
+    <None Include="Textures\uran.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\venus.jpg">
+    <None Include="Textures\venus.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="tekstury\world.jpg">
+    <None Include="Textures\world.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="modele\monkey.obj">
+    <None Include="Models\monkey.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

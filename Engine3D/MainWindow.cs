@@ -59,8 +59,8 @@ public partial class MainWindow : Gtk.Window
       BackgroundColor = _black,
     };
 
-    LoadModel(@"modele/monkey.obj", @"tekstury/sun.jpg");
-    LoadModel(@"modele/monkey.obj", @"tekstury/earth.jpg");
+    LoadModel(@"Models/monkey.obj", @"Textures/sun.jpg");
+    LoadModel(@"Models/monkey.obj", @"Textures/earth.jpg");
 
     _scene.World[1].Translate(new Vector3D(500, 0, 0));
     _scene.World[1].Scale(new Vector3D(-50, -50, -50));
