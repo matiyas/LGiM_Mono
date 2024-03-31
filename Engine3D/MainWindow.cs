@@ -6,7 +6,8 @@ using UI = Gtk.Builder.ObjectAttribute;
 
 namespace Engine3D;
 
-[Flags] public enum State
+[Flags]
+public enum State
 {
   none = 0,
   lpm = 1,
