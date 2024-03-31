@@ -99,7 +99,7 @@ public partial class MainWindow : Gtk.Window
 
     if (texturePath != null)
     {
-      _scene.Swiat[_scene.Swiat.Count - 1].Renderowanie = new Renderowanie(texturePath, _scene);
+      _scene.Swiat[_scene.Swiat.Count - 1].Renderowanie = new Renderer(texturePath, _scene);
     }
     _comboBoxModels.AppendText(_scene.Swiat[_scene.Swiat.Count - 1].Nazwa ?? "Model" + (_scene.Swiat.Count - 1));
     _comboBoxModels.Active = _scene.Swiat.Count - 1;
@@ -281,7 +281,7 @@ public partial class MainWindow : Gtk.Window
     if (fileChooser.Run() == (int)ResponseType.Ok)
     {
       _scene.Swiat[_comboBoxModels.Active].Renderowanie =
-        new Renderowanie(
+        new Renderer(
           path: fileChooser.Filename,
           drawer: _scene
         );

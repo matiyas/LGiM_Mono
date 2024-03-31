@@ -201,7 +201,7 @@ class WavefrontObj
 
   public Sciana[] ScianyTrojkatne { get; }
 
-  public Renderowanie Renderowanie { get; set; }
+  public Renderer Renderowanie { get; set; }
 
   public string Nazwa { get; private set; }
 
@@ -225,8 +225,8 @@ class WavefrontObj
 
   public void ObrocWokolOsi(double phi, UnitVector3D axis, Vector3D angle)
   {
-    VertexCoords = Math3D.RotateAroundAxis(VertexCoords, axis, phi, angle);
-    VertexNormalsCoords = Math3D.RotateAroundAxis(VertexNormalsCoords, axis, phi, angle);
+    VertexCoords = Math3DExtensions.RotateAroundAxis(VertexCoords, axis, phi, angle);
+    VertexNormalsCoords = Math3DExtensions.RotateAroundAxis(VertexNormalsCoords, axis, phi, angle);
   }
 
   public void Skaluj(Vector3D s)

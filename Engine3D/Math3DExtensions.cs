@@ -5,7 +5,7 @@ using static System.Math;
 
 namespace Engine3D;
 
-static class Math3D
+static class Math3DExtensions
 {
   public static Vector3D FindCenter(this Vector3D[] vertices)
   {

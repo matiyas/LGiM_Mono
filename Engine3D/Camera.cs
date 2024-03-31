@@ -110,13 +110,13 @@ class Camera
 
   public void Rotate(Vector3D angle)
   {
-    _forward = Math3D.RotateAroundAxis(_forward, _upward, -angle.Y);
+    _forward = Math3DExtensions.RotateAroundAxis(_forward, _upward, -angle.Y);
     _right = _upward.CrossProduct(_forward);
 
-    _forward = Math3D.RotateAroundAxis(_forward, _right, -angle.X);
+    _forward = Math3DExtensions.RotateAroundAxis(_forward, _right, -angle.X);
     _upward = _forward.CrossProduct(_right);
 
-    _right = Math3D.RotateAroundAxis(_right, _forward, -angle.Z);
+    _right = Math3DExtensions.RotateAroundAxis(_right, _forward, -angle.Z);
     _upward = _forward.CrossProduct(_right);
 
     _target = _position - _forward;

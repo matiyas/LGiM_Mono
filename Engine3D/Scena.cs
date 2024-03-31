@@ -209,7 +209,7 @@ class Scena
 
     foreach (WavefrontObj model in Swiat)
     {
-      Vector3D[] modelRzut = Math3D.PerspectiveView(model.VertexCoords, Odleglosc, srodek, Kamera);
+      Vector3D[] modelRzut = Math3DExtensions.PerspectiveView(model.VertexCoords, Odleglosc, srodek, Kamera);
       Vector3D srodekObiektu = model.VertexNormalsCoords.FindCenter();
 
       if (model.Sciany == null || modelRzut == null || model.Renderowanie == null) { continue; }
@@ -221,9 +221,9 @@ class Scena
 
         var gradient = Swiat.IndexOf(model) != ZrodloSwiatlaIndeks ? new double[]
         {
-                        Renderowanie.Jasnosc(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[0]], srodekObiektu),
-                        Renderowanie.Jasnosc(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[1]], srodekObiektu),
-                        Renderowanie.Jasnosc(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[2]], srodekObiektu),
+                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[0]], srodekObiektu),
+                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[1]], srodekObiektu),
+                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[2]], srodekObiektu),
         } : new double[] { 1, 1, 1 };
 
         var obszar = new Vector3D[]
@@ -241,7 +241,7 @@ class Scena
                         model.VertexTextureCoords[sciana.VertexTexture[2]],
         } : new Vector2D[] { new Vector2D(0, 0), new Vector2D(0, 0), new Vector2D(0, 0) };
 
-        model.Renderowanie.RenderujTrojkat(obszar, gradient, tekstura, zBufor);
+        model.Renderowanie.RenderTriangle(obszar, gradient, tekstura, zBufor);
       }
     }
   }
