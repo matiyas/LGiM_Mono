@@ -9,10 +9,10 @@ namespace Engine3D;
 [Flags]
 public enum State
 {
-  none = 0,
-  lpm = 1,
-  ppm = 2,
-  shift = 4
+  None = 0,
+  LeftMouseBtn = 1,
+  RightMouseBtn = 2,
+  Shift = 4
 };
 
 public enum Mode
@@ -48,7 +48,7 @@ public partial class MainWindow : Gtk.Window
   {
     builder.Autoconnect(this);
 
-    _state = Engine3D.State.none;
+    _state = Engine3D.State.None;
     _mouseSensitivity = 0.3;
     _labelEditMode.Text = _mode.ToString();
     _comboBoxModels.Active = 0;
@@ -179,7 +179,7 @@ public partial class MainWindow : Gtk.Window
         break;
 
       case Gdk.Key.Shift_L:
-        _state |= Engine3D.State.shift;
+        _state |= Engine3D.State.Shift;
         break;
     }
   }
@@ -188,7 +188,7 @@ public partial class MainWindow : Gtk.Window
   {
     if (eventKey.Key == Gdk.Key.Shift_L)
     {
-      _state &= ~Engine3D.State.shift;
+      _state &= ~Engine3D.State.Shift;
     }
 
     return base.OnKeyReleaseEvent(eventKey);
@@ -298,9 +298,9 @@ public partial class MainWindow : Gtk.Window
 
   protected void OnEventBoxScreenMotionNotifyEvent(object _sender, MotionNotifyEventArgs eventArgs)
   {
-    if ((_state & Engine3D.State.lpm) != 0)
+    if ((_state & Engine3D.State.LeftMouseBtn) != 0)
     {
-      if ((_state & Engine3D.State.shift) != 0)
+      if ((_state & Engine3D.State.Shift) != 0)
       {
         var rotateVector =
           new Vector3D(
@@ -330,7 +330,7 @@ public partial class MainWindow : Gtk.Window
         );
     }
 
-    if ((_state & Engine3D.State.ppm) != 0)
+    if ((_state & Engine3D.State.RightMouseBtn) != 0)
     {
       var value =
         new Point(
@@ -341,7 +341,7 @@ public partial class MainWindow : Gtk.Window
       switch (_mode)
       {
         case Mode.Move:
-          if ((_state & Engine3D.State.shift) != 0)
+          if ((_state & Engine3D.State.Shift) != 0)
           {
             var moveVector =
               new Vector3D(
@@ -373,7 +373,7 @@ public partial class MainWindow : Gtk.Window
           break;
 
         case Mode.Scaling:
-          if ((_state & Engine3D.State.shift) != 0)
+          if ((_state & Engine3D.State.Shift) != 0)
           {
             var scaleValue =
               Math.Sqrt(Math.Pow(value.X - value.Y, 2)) *
@@ -409,7 +409,7 @@ public partial class MainWindow : Gtk.Window
           break;
 
         case Mode.Rotating:
-          if ((_state & Engine3D.State.shift) != 0)
+          if ((_state & Engine3D.State.Shift) != 0)
           {
             _scene.World[_comboBoxModels.Active].RotateAroundAxis(
               angle: value.X,
@@ -450,7 +450,7 @@ public partial class MainWindow : Gtk.Window
           x: (int)args.Event.X,
           y: (int)args.Event.Y
         );
-      _state |= Engine3D.State.lpm;
+      _state |= Engine3D.State.LeftMouseBtn;
     }
 
     if (args.Event.Button == 3)
@@ -460,7 +460,7 @@ public partial class MainWindow : Gtk.Window
           x: (int)args.Event.X,
           y: (int)args.Event.Y
         );
-      _state |= Engine3D.State.ppm;
+      _state |= Engine3D.State.RightMouseBtn;
     }
   }
 
@@ -468,12 +468,12 @@ public partial class MainWindow : Gtk.Window
   {
     if (eventArgs.Event.Button == 1)
     {
-      _state &= ~Engine3D.State.lpm;
+      _state &= ~Engine3D.State.LeftMouseBtn;
     }
 
     if (eventArgs.Event.Button == 3)
     {
-      _state &= ~Engine3D.State.ppm;
+      _state &= ~Engine3D.State.RightMouseBtn;
     }
   }
 
