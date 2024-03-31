@@ -8,11 +8,11 @@ namespace Engine3D;
 
 class Renderer
 {
-  private readonly Scena _drawer;
+  private readonly Scene _drawer;
   private readonly Color[,] _textureColors;
   private readonly Image<Rgb24> _bitmap;
 
-  public Renderer(string path, Scena drawer)
+  public Renderer(string path, Scene drawer)
   {
     _bitmap = Image.Load(path).CloneAs<Rgb24>();
     _drawer = drawer;
@@ -27,13 +27,13 @@ class Renderer
     }
   }
 
-  public Renderer(Scena drawer)
+  public Renderer(Scene drawer)
   {
     _drawer = drawer;
     _textureColors = null;
   }
 
-  public void RenderTriangle(Vector3D[] vertices, double[] normalVertex, Vector2D[] textureVertex, double[,] bufferZ)
+  public void RenderTriangle(Vector3D[] vertices, double[] normalVertex, Vector2D[] textureVertex, double[,] zBuffer)
   {
     var tmp = vertices.OrderBy(vertex => vertex.Y);
     var y0 = tmp.First();
@@ -117,10 +117,10 @@ class Renderer
 
         if (
           x < 0 ||
-          x >= bufferZ.GetLength(0) ||
+          x >= zBuffer.GetLength(0) ||
           y < 0 ||
-          y >= bufferZ.GetLength(1) ||
-          bufferZ[x, y] < z ||
+          y >= zBuffer.GetLength(1) ||
+          zBuffer[x, y] < z ||
           z <= 300
         )
         {
@@ -158,9 +158,9 @@ class Renderer
             g: (byte)(127 * brightness),
             b: (byte)(127 * brightness)
           );
-          _drawer.RysujPiksel(new Vector2D(x, y), color);
+          _drawer.DrawPixel(new Vector2D(x, y), color);
 
-          bufferZ[x, y] = z;
+          zBuffer[x, y] = z;
           continue;
         }
 
@@ -187,8 +187,8 @@ class Renderer
             b: (byte)((db * (da * colorP1.B + a * colorP3.B) + b * (da * colorP2.B + a * colorP4.B)) * brightness)
           );
 
-        _drawer.RysujPiksel(new Vector2D(x, y), pixelColor);
-        bufferZ[x, y] = z;
+        _drawer.DrawPixel(new Vector2D(x, y), pixelColor);
+        zBuffer[x, y] = z;
       }
     }
   }

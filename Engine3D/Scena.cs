@@ -1,270 +1,378 @@
 ﻿using Drawing = System.Drawing;
 using MathNet.Spatial.Euclidean;
 using System.Collections.Generic;
-using Gdk;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Engine3D;
 
-class Scena
+class Scene
 {
-  static Gdk.Color Black = new Gdk.Color(0, 0, 0);
-  static Gdk.Color Green = new Gdk.Color(0, 255, 0);
-  static Gdk.Color White = new Gdk.Color(255, 255, 255);
+  private static Gdk.Color _blackColor = new(0, 0, 0);
+  private static Gdk.Color _greenColor = new(0, 255, 0);
+  private static Gdk.Color _whiteColor = new(255, 255, 255);
 
-  byte[] tlo;
-  double[,] zBufor;
-  Vector2D srodek;
+  private readonly byte[] _background;
+  private readonly double[,] _zBuffer;
+  private readonly Vector2D _center;
 
-  public Scena(string sciezkaTlo, Drawing.Size rozmiar, double odlegosc, double minOdleglosc)
+  public Scene(string backgroundPath, Drawing.Size size, double distance, double minDistance)
   {
-    Rozmiar = rozmiar;
-    srodek = new Vector2D(rozmiar.Width / 2, rozmiar.Height / 2);
-    BackBuffer = new byte[4 * rozmiar.Width * rozmiar.Height];
+    Size = size;
+    _center =
+      new Vector2D(
+        x: size.Width / 2,
+        y: size.Height / 2
+      );
+    BackBuffer = new byte[4 * size.Width * size.Height];
 
-    tlo = ToByteArray(sciezkaTlo);
-    tlo.CopyTo(BackBuffer, 0);
+    _background = ToByteArray(backgroundPath);
+    _background.CopyTo(BackBuffer, 0);
 
-    Swiat = new List<WavefrontObj>();
-    Kamera = new Camera();
-    Odleglosc = odlegosc;
+    World = new List<WavefrontObj>();
+    Camera = new Camera();
+    Distance = distance;
+    _zBuffer = new double[size.Width, size.Height];
 
-    zBufor = new double[rozmiar.Width, rozmiar.Height];
-    CzyscZBuffor();
+    ClearZBuffer();
 
-    MinOdleglosc = minOdleglosc;
+    MinDistance = minDistance;
   }
 
-  public List<WavefrontObj> Swiat { get; set; }
-
-  public Camera Kamera { get; set; }
-
-  public int ZrodloSwiatlaIndeks { get; set; } = -1;
-
-  public Vector3D ZrodloSwiatla { get; set; }
-
+  public List<WavefrontObj> World { get; set; }
+  public Camera Camera { get; set; }
+  public int LightSourceIndex { get; set; } = -1;
+  public Vector3D LightSource { get; set; }
   public byte[] BackBuffer { get; private set; }
+  public Drawing.Size Size { get; private set; }
+  public Gdk.Color BrushColor { get; set; } = _blackColor;
+  public Gdk.Color BackgroundColor { get; set; } = _whiteColor;
+  public double Distance { get; set; }
+  public double MinDistance { get; set; }
 
-  public Drawing.Size Rozmiar { get; private set; }
-
-  public Gdk.Color KolorPedzla { get; set; } = Black;
-
-  public Gdk.Color KolorTla { get; set; } = White;
-
-  public double Odleglosc { get; set; }
-
-  public double MinOdleglosc { get; set; }
-
-  public void RysujPiksel(Vector2D p, Gdk.Color kolor)
+  public void DrawPixel(Vector2D vertex, Gdk.Color color)
   {
-    if (p.X < 0 || p.X >= Rozmiar.Width || p.Y < 0 || p.Y >= Rozmiar.Height) { return; }
+    if (
+      vertex.X < 0 ||
+      vertex.X >= Size.Width ||
+      vertex.Y < 0 ||
+      vertex.Y >= Size.Height
+    )
+    {
+      return;
+    }
 
-    int pozycja = 4 * ((int)p.Y * Rozmiar.Width + (int)p.X);
-    BackBuffer[pozycja] = (byte)kolor.Blue;
-    BackBuffer[pozycja + 1] = (byte)kolor.Green;
-    BackBuffer[pozycja + 2] = (byte)kolor.Red;
-    //BackBuffer[pozycja + 3] = kolor.A;
+    var position = 4 * ((int)vertex.Y * Size.Width + (int)vertex.X);
+    BackBuffer[position] = (byte)color.Blue;
+    BackBuffer[position + 1] = (byte)color.Green;
+    BackBuffer[position + 2] = (byte)color.Red;
+    //BackBuffer[position + 3] = (byte)color.A;
   }
 
-  public void RysujLinie(Vector3D p0, Vector3D p1, Gdk.Color kolor)
+  public void DrawLine(Vector3D lineStart, Vector3D lineEnd, Gdk.Color color)
   {
-    Vector3D startX = p0.X < p1.X ? p0 : p1;
-    Vector3D endX = p0.X > p1.X ? p0 : p1;
-    Vector3D startY = p0.Y < p1.Y ? p0 : p1;
-    Vector3D endY = p0.Y > p1.Y ? p0 : p1;
+    var startX = lineStart.X < lineEnd.X ? lineStart : lineEnd;
+    var endX = lineStart.X > lineEnd.X ? lineStart : lineEnd;
+    var startY = lineStart.Y < lineEnd.Y ? lineStart : lineEnd;
+    var endY = lineStart.Y > lineEnd.Y ? lineStart : lineEnd;
 
-    int dx = (int)(endX.X - startX.X);
-    int dy = (int)(endY.Y - startY.Y);
+    var dx = (int)(endX.X - startX.X);
+    var dy = (int)(endY.Y - startY.Y);
 
     if (dx > dy)
     {
-      double krok = (startX.Z - endX.Z) / dx;
-      double z = startX.Z;
+      var step = (startX.Z - endX.Z) / dx;
+      var z = startX.Z;
 
-      for (int x = (int)startX.X; x <= endX.X; ++x)
+      for (var x = (int)startX.X; x <= endX.X; ++x)
       {
-        double y = (dy / (double)dx) * (x - p0.X) + p0.Y;
+        var y = dy / (double)dx * (x - lineStart.X) + lineStart.Y;
 
-        if ((p1.X > p0.X && p1.Y > p0.Y) || (p1.X < p0.X && p1.Y < p0.Y))
+        if (
+          (lineEnd.X > lineStart.X && lineEnd.Y > lineStart.Y) ||
+          (lineEnd.X < lineStart.X && lineEnd.Y < lineStart.Y)
+        )
         {
-          if (x >= 0 && x < zBufor.GetLength(0) && y >= 0 && y < zBufor.GetLength(1)
-              && zBufor[x, (int)y] > z && z > MinOdleglosc)
+          if (
+            x >= 0 &&
+            x < _zBuffer.GetLength(0) &&
+            y >= 0 &&
+            y < _zBuffer.GetLength(1) &&
+            _zBuffer[x, (int)y] > z && z > MinDistance
+          )
           {
-            RysujPiksel(new Vector2D(x, y), kolor);
+            DrawPixel(new Vector2D(x, y), color);
           }
         }
-        else if (x >= 0 && x < zBufor.GetLength(0) && 2 * p0.Y - y >= 0 && 2 * p0.Y - y < zBufor.GetLength(1)
-           && zBufor[x, (int)(2 * p0.Y - y)] > z && z > MinOdleglosc)
+        else if (
+          x >= 0 &&
+          x < _zBuffer.GetLength(0) &&
+          2 * lineStart.Y - y >= 0 &&
+          2 * lineStart.Y - y < _zBuffer.GetLength(1) &&
+          _zBuffer[x, (int)(2 * lineStart.Y - y)] > z &&
+          z > MinDistance
+        )
         {
-          RysujPiksel(new Vector2D(x, 2 * p0.Y - y), kolor);
+          DrawPixel(new Vector2D(x, 2 * lineStart.Y - y), color);
         }
 
-        y += krok;
+        y += step;
       }
     }
     else
     {
-      double krok = (startY.Z - endY.Z) / dy;
-      double z = startY.Z;
+      var step = (startY.Z - endY.Z) / dy;
+      var z = startY.Z;
 
       for (int y = (int)startY.Y; y <= endY.Y; ++y)
       {
-        double x = (dx / (double)dy) * (y - p0.Y) + p0.X;
+        var x = dx / (double)dy * (y - lineStart.Y) + lineStart.X;
 
-        if ((p1.X > p0.X && p1.Y > p0.Y) || (p1.X < p0.X && p1.Y < p0.Y))
+        if (
+          (lineEnd.X > lineStart.X && lineEnd.Y > lineStart.Y) ||
+          (lineEnd.X < lineStart.X && lineEnd.Y < lineStart.Y)
+        )
         {
-          if (x >= 0 && x < zBufor.GetLength(0) && y >= 0 && y < zBufor.GetLength(1) && zBufor[(int)x, y] > z
-              && z > MinOdleglosc)
+          if (
+            x >= 0 &&
+            x < _zBuffer.GetLength(0) &&
+            y >= 0 &&
+            y < _zBuffer.GetLength(1) &&
+            _zBuffer[(int)x, y] > z &&
+            z > MinDistance
+          )
           {
-            RysujPiksel(new Vector2D(x, y), kolor);
+            DrawPixel(new Vector2D(x, y), color);
           }
         }
-        else if (2 * p0.X - x >= 0 && 2 * p0.X - x < zBufor.GetLength(0) && y >= 0 && y < zBufor.GetLength(1)
-           && zBufor[(int)(2 * p0.X - x), y] > z && z > MinOdleglosc)
+        else if (
+          2 * lineStart.X - x >= 0 &&
+          2 * lineStart.X - x < _zBuffer.GetLength(0) &&
+          y >= 0 &&
+          y < _zBuffer.GetLength(1) &&
+          _zBuffer[(int)(2 * lineStart.X - x), y] > z &&
+          z > MinDistance
+        )
         {
-          RysujPiksel(new Vector2D(2 * p0.X - x, y), kolor);
+          DrawPixel(new Vector2D(2 * lineStart.X - x, y), color);
         }
 
-        z += krok;
+        z += step;
       }
     }
   }
 
-  public void CzyscZBuffor()
+  public void ClearZBuffer()
   {
-    for (int i = 0; i < zBufor.GetLength(0); ++i)
+    for (var i = 0; i < _zBuffer.GetLength(0); ++i)
     {
-      for (int j = 0; j < zBufor.GetLength(1); ++j)
+      for (var j = 0; j < _zBuffer.GetLength(1); ++j)
       {
-        zBufor[i, j] = double.PositiveInfinity;
+        _zBuffer[i, j] = double.PositiveInfinity;
       }
     }
   }
 
-  public void CzyscEkran()
+  public void ClearScreen()
   {
     for (int i = 0; i < BackBuffer.Length; i += 4)
     {
-      BackBuffer[i] = (byte)KolorTla.Blue;
-      BackBuffer[i + 1] = (byte)KolorTla.Green;
-      BackBuffer[i + 2] = (byte)KolorTla.Red;
-      //BackBuffer[i + 3] = KolorTla.A;
+      BackBuffer[i] = (byte)BackgroundColor.Blue;
+      BackBuffer[i + 1] = (byte)BackgroundColor.Green;
+      BackBuffer[i + 2] = (byte)BackgroundColor.Red;
+      //BackBuffer[i + 3] = (byte)BackgroundColor.A;
     }
   }
 
-  public void RysujSiatkePodlogi(int szerokosc, int wysokosc, int skok, Gdk.Color kolorSiatki, Gdk.Color kolorOsiX, Gdk.Color kolorOsiZ)
+  public void DrawFloorMesh(
+    int width,
+    int height,
+    int step,
+    Gdk.Color meshColor,
+    Gdk.Color axisXColor,
+    Gdk.Color axisZColor
+  )
   {
-    for (int z = -wysokosc / 2; z < wysokosc / 2; z += skok)
+    for (var z = -height / 2; z < height / 2; z += step)
     {
-      for (int x = -szerokosc / 2; x < szerokosc / 2; x += skok)
+      for (var x = -width / 2; x < width / 2; x += step)
       {
-        var wierzcholki = new Vector3D[]
+        var vertices =
+          new Vector3D[]
+          {
+            new Vector3D(x, 0, z).PerspectiveView(Distance, _center, Camera),
+            new Vector3D(x + step, 0, z).PerspectiveView(Distance, _center, Camera),
+            new Vector3D(x + step, 0, z + step).PerspectiveView(Distance, _center, Camera),
+            new Vector3D(x, 0, z + step).PerspectiveView(Distance, _center, Camera)
+          };
+
+        for (int i = 0; i < vertices.Length; ++i)
         {
-                        new Vector3D(x, 0, z).PerspectiveView(Odleglosc, srodek, Kamera),
-                        new Vector3D(x + skok, 0, z).PerspectiveView(Odleglosc, srodek, Kamera),
-                        new Vector3D(x + skok, 0, z + skok).PerspectiveView(Odleglosc, srodek, Kamera),
-                        new Vector3D(x, 0, z + skok).PerspectiveView(Odleglosc, srodek, Kamera)
-        };
+          if (
+            vertices[i].Z <= MinDistance ||
+            vertices[(i + 1) % vertices.Length].Z <= MinDistance
+          )
+          {
+            continue;
+          }
 
-        for (int i = 0; i < wierzcholki.Length; ++i)
-        {
-          if (wierzcholki[i].Z <= MinOdleglosc || wierzcholki[(i + 1) % wierzcholki.Length].Z <= MinOdleglosc) { continue; }
+          Gdk.Color color;
 
-          Gdk.Color kolor;
+          if (x == 0 && i == 3)
+          {
+            color = axisZColor;
+          }
+          else if (z == 0 && i == 0)
+          {
+            color = axisXColor;
+          }
+          else
+          {
+            color = meshColor;
+          }
 
-          if (x == 0 && i == 3) { kolor = kolorOsiZ; }
-          else if (z == 0 && i == 0) { kolor = kolorOsiX; }
-          else { kolor = kolorSiatki; }
-
-          RysujLinie(wierzcholki[i], wierzcholki[(i + 1) % wierzcholki.Length], kolor);
+          DrawLine(
+            lineStart: vertices[i],
+            lineEnd: vertices[(i + 1) % vertices.Length],
+            color: color
+          );
         }
       }
     }
   }
 
-  public void RysujSiatke()
+  public void DrawMesh()
   {
-    CzyscEkran();
-    CzyscZBuffor();
+    ClearScreen();
+    ClearZBuffer();
 
-    foreach (WavefrontObj model in Swiat)
+    foreach (var model in World)
     {
-      Vector3D[] modelRzut = model.VertexCoords.PerspectiveView(Odleglosc, srodek, Kamera);
+      var modelPerspectiveView = model.VertexCoords.PerspectiveView(Distance, _center, Camera);
 
-      foreach (Sciana sciana in model.Sciany)
+      foreach (var surface in model.Sciany)
       {
-        for (int i = 0; i < sciana.Vertex.Length; ++i)
+        for (var i = 0; i < surface.Vertex.Length; ++i)
         {
-          RysujLinie(modelRzut[sciana.Vertex[i]], modelRzut[sciana.Vertex[(i + 1) % sciana.Vertex.Length]], Green);
+          DrawLine(
+            lineStart: modelPerspectiveView[surface.Vertex[i]],
+            lineEnd: modelPerspectiveView[surface.Vertex[(i + 1) % surface.Vertex.Length]],
+            color: _greenColor
+          );
         }
       }
     }
   }
 
-  public void Renderuj()
+  public void Render()
   {
-    tlo.CopyTo(BackBuffer, 0);
-    CzyscZBuffor();
+    _background.CopyTo(BackBuffer, 0);
+    ClearZBuffer();
 
-    foreach (WavefrontObj model in Swiat)
+    foreach (var model in World)
     {
-      Vector3D[] modelRzut = Math3DExtensions.PerspectiveView(model.VertexCoords, Odleglosc, srodek, Kamera);
-      Vector3D srodekObiektu = model.VertexNormalsCoords.FindCenter();
+      var modelPerspectiveView = Math3DExtensions.PerspectiveView(model.VertexCoords, Distance, _center, Camera);
+      var modelCenter = model.VertexNormalsCoords.FindCenter();
 
-      if (model.Sciany == null || modelRzut == null || model.Renderowanie == null) { continue; }
-
-      foreach (Sciana sciana in model.ScianyTrojkatne)
+      if (
+        model.Sciany == null ||
+        modelPerspectiveView == null ||
+        model.Renderowanie == null
+      )
       {
-        if (modelRzut[sciana.Vertex[0]].Z <= MinOdleglosc && modelRzut[sciana.Vertex[1]].Z <= MinOdleglosc
-            && modelRzut[sciana.Vertex[2]].Z <= MinOdleglosc) { continue; }
+        continue;
+      }
 
-        var gradient = Swiat.IndexOf(model) != ZrodloSwiatlaIndeks ? new double[]
+      foreach (var surface in model.ScianyTrojkatne)
+      {
+        if (
+          modelPerspectiveView[surface.Vertex[0]].Z <= MinDistance &&
+          modelPerspectiveView[surface.Vertex[1]].Z <= MinDistance &&
+          modelPerspectiveView[surface.Vertex[2]].Z <= MinDistance
+        )
         {
-                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[0]], srodekObiektu),
-                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[1]], srodekObiektu),
-                        Renderer.Brightness(ZrodloSwiatla, model.VertexNormalsCoords[sciana.VertexNormal[2]], srodekObiektu),
-        } : new double[] { 1, 1, 1 };
+          continue;
+        }
 
-        var obszar = new Vector3D[]
+        double[] gradient;
+
+        if (World.IndexOf(model) != LightSourceIndex)
         {
-                        modelRzut[sciana.Vertex[0]],
-                        modelRzut[sciana.Vertex[1]],
-                        modelRzut[sciana.Vertex[2]],
-        };
-
-        var tekstura = sciana.VertexTexture[0] >= 0 && sciana.VertexTexture[1] >= 0 && sciana.VertexTexture[2] >= 0 ?
-        new Vector2D[]
+          gradient =
+            new double[]
+            {
+              Renderer.Brightness(LightSource, model.VertexNormalsCoords[surface.VertexNormal[0]], modelCenter),
+              Renderer.Brightness(LightSource, model.VertexNormalsCoords[surface.VertexNormal[1]], modelCenter),
+              Renderer.Brightness(LightSource, model.VertexNormalsCoords[surface.VertexNormal[2]], modelCenter),
+            };
+        }
+        else
         {
-                        model.VertexTextureCoords[sciana.VertexTexture[0]],
-                        model.VertexTextureCoords[sciana.VertexTexture[1]],
-                        model.VertexTextureCoords[sciana.VertexTexture[2]],
-        } : new Vector2D[] { new Vector2D(0, 0), new Vector2D(0, 0), new Vector2D(0, 0) };
+          gradient = new double[] { 1, 1, 1 };
+        }
 
-        model.Renderowanie.RenderTriangle(obszar, gradient, tekstura, zBufor);
+        var surfaceVertices =
+          new Vector3D[]
+          {
+            modelPerspectiveView[surface.Vertex[0]],
+            modelPerspectiveView[surface.Vertex[1]],
+            modelPerspectiveView[surface.Vertex[2]]
+          };
+        Vector2D[] texture;
+
+        if (
+          surface.VertexTexture[0] >= 0 &&
+          surface.VertexTexture[1] >= 0 &&
+          surface.VertexTexture[2] >= 0
+        )
+        {
+          texture =
+            new Vector2D[]
+            {
+              model.VertexTextureCoords[surface.VertexTexture[0]],
+              model.VertexTextureCoords[surface.VertexTexture[1]],
+              model.VertexTextureCoords[surface.VertexTexture[2]]
+            };
+        }
+        else
+        {
+          texture =
+            new Vector2D[] {
+              new(0, 0),
+              new(0, 0),
+              new(0, 0)
+            };
+        }
+
+        model.Renderowanie.RenderTriangle(
+          vertices: surfaceVertices,
+          normalVertex: gradient,
+          textureVertex: texture,
+          zBuffer: _zBuffer
+        );
       }
     }
   }
 
-  public static byte[] ToByteArray(string sciezka)
+  public static byte[] ToByteArray(string path)
   {
-    var bmp = Image.Load(sciezka).CloneAs<Rgba32>();
-    var pixs = new byte[bmp.Size.Width * bmp.Height * 4];
+    var bitmap = Image.Load(path).CloneAs<Rgba32>();
+    var pixels = new byte[bitmap.Size.Width * bitmap.Height * 4];
 
-    for (int x = 0; x < bmp.Width; ++x)
+    for (var x = 0; x < bitmap.Width; ++x)
     {
-      for (int y = 0; y < bmp.Height; ++y)
+      for (var y = 0; y < bitmap.Height; ++y)
       {
-        int pos = 4 * (y * bmp.Width + x);
-        var c = bmp[x, y];
+        var pos = 4 * (y * bitmap.Width + x);
+        var color = bitmap[x, y];
 
-        pixs[pos++] = c.B;
-        pixs[pos++] = c.G;
-        pixs[pos++] = c.R;
-        pixs[pos] = c.A;
+        pixels[pos++] = color.B;
+        pixels[pos++] = color.G;
+        pixels[pos++] = color.R;
+        pixels[pos] = color.A;
       }
     }
 
-    return pixs;
+    return pixels;
   }
 }
