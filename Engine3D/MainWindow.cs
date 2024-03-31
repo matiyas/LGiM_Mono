@@ -62,8 +62,8 @@ public partial class MainWindow : Gtk.Window
     LoadModel(@"modele/monkey.obj", @"tekstury/sun.jpg");
     LoadModel(@"modele/monkey.obj", @"tekstury/earth.jpg");
 
-    _scene.World[1].Przesun(new Vector3D(500, 0, 0));
-    _scene.World[1].Skaluj(new Vector3D(-50, -50, -50));
+    _scene.World[1].Translate(new Vector3D(500, 0, 0));
+    _scene.World[1].Scale(new Vector3D(-50, -50, -50));
     _scene.LightSourceIndex = 0;
 
     GLib.Timeout.Add(50, new GLib.TimeoutHandler(OnUpdate));
@@ -99,11 +99,11 @@ public partial class MainWindow : Gtk.Window
 
     if (texturePath != null)
     {
-      _scene.World[_scene.World.Count - 1].Renderowanie = new Renderer(texturePath, _scene);
+      _scene.World[^1].Rendering = new Renderer(texturePath, _scene);
     }
-    _comboBoxModels.AppendText(_scene.World[_scene.World.Count - 1].Nazwa ?? "Model" + (_scene.World.Count - 1));
+    _comboBoxModels.AppendText(_scene.World[^1].Name ?? "Model" + (_scene.World.Count - 1));
     _comboBoxModels.Active = _scene.World.Count - 1;
-    _scene.World[_scene.World.Count - 1].Obroc(new Vector3D(Math.PI * 100, 0, 0));
+    _scene.World[^1].Rotate(new Vector3D(Math.PI * 100, 0, 0));
   }
 
   void DrawOnScreen()
@@ -215,12 +215,12 @@ public partial class MainWindow : Gtk.Window
     if (fileChooser.Run() == (int)ResponseType.Ok)
     {
       var model = new WavefrontObj(fileChooser.Filename);
-      model.Obroc(new Vector3D(Math.PI * 100, 0, 0));
-      model.Renderowanie = _scene.World[_comboBoxModels.Active].Renderowanie;
+      model.Rotate(new Vector3D(Math.PI * 100, 0, 0));
+      model.Rendering = _scene.World[_comboBoxModels.Active].Rendering;
 
       var tmp = _comboBoxModels.Active;
       _scene.World[_comboBoxModels.Active] = model;
-      _comboBoxModels.AppendText(model.Nazwa);
+      _comboBoxModels.AppendText(model.Name);
       _comboBoxModels.Active = tmp;
     }
 
@@ -280,7 +280,7 @@ public partial class MainWindow : Gtk.Window
 
     if (fileChooser.Run() == (int)ResponseType.Ok)
     {
-      _scene.World[_comboBoxModels.Active].Renderowanie =
+      _scene.World[_comboBoxModels.Active].Rendering =
         new Renderer(
           path: fileChooser.Filename,
           drawer: _scene
@@ -349,7 +349,7 @@ public partial class MainWindow : Gtk.Window
                 z: -value.Y * _scene.Camera.Forward.Z * 3
               );
 
-            _scene.World[_comboBoxModels.Active].Przesun(moveVector);
+            _scene.World[_comboBoxModels.Active].Translate(moveVector);
           }
           else
           {
@@ -366,8 +366,8 @@ public partial class MainWindow : Gtk.Window
                 z: value.Y * _scene.Camera.Upward.Z * 3
               );
 
-            _scene.World[_comboBoxModels.Active].Przesun(moveVectorX);
-            _scene.World[_comboBoxModels.Active].Przesun(moveVectorY);
+            _scene.World[_comboBoxModels.Active].Translate(moveVectorX);
+            _scene.World[_comboBoxModels.Active].Translate(moveVectorY);
           }
           break;
 
@@ -385,7 +385,7 @@ public partial class MainWindow : Gtk.Window
                 z: scaleValue
               );
 
-            _scene.World[_comboBoxModels.Active].Skaluj(scaleVector);
+            _scene.World[_comboBoxModels.Active].Scale(scaleVector);
           }
           else
           {
@@ -402,31 +402,31 @@ public partial class MainWindow : Gtk.Window
                 z: -value.Y * _scene.Camera.Upward.Z
               );
 
-            _scene.World[_comboBoxModels.Active].Skaluj(scaleVectorX);
-            _scene.World[_comboBoxModels.Active].Skaluj(scaleVectorY);
+            _scene.World[_comboBoxModels.Active].Scale(scaleVectorX);
+            _scene.World[_comboBoxModels.Active].Scale(scaleVectorY);
           }
           break;
 
         case Mode.Rotating:
           if ((_state & Engine3D.State.shift) != 0)
           {
-            _scene.World[_comboBoxModels.Active].ObrocWokolOsi(
-              phi: value.X,
+            _scene.World[_comboBoxModels.Active].RotateAroundAxis(
+              angle: value.X,
               axis: _scene.Camera.Forward,
-              angle: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
+              center: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
           }
           else
           {
-            _scene.World[_comboBoxModels.Active].ObrocWokolOsi(
-              phi: -value.X,
+            _scene.World[_comboBoxModels.Active].RotateAroundAxis(
+              angle: -value.X,
               axis: _scene.Camera.Upward,
-              angle: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
+              center: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
-            _scene.World[_comboBoxModels.Active].ObrocWokolOsi(
-              phi: value.Y,
+            _scene.World[_comboBoxModels.Active].RotateAroundAxis(
+              angle: value.Y,
               axis: _scene.Camera.Right,
-              angle: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
+              center: _scene.World[_comboBoxModels.Active].VertexCoords.FindCenter()
             );
           }
           break;

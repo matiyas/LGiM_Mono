@@ -250,7 +250,7 @@ class Scene
     {
       var modelPerspectiveView = model.VertexCoords.PerspectiveView(Distance, _center, Camera);
 
-      foreach (var surface in model.Sciany)
+      foreach (var surface in model.Surfaces)
       {
         for (var i = 0; i < surface.Vertex.Length; ++i)
         {
@@ -275,15 +275,15 @@ class Scene
       var modelCenter = model.VertexNormalsCoords.FindCenter();
 
       if (
-        model.Sciany == null ||
+        model.Surfaces == null ||
         modelPerspectiveView == null ||
-        model.Renderowanie == null
+        model.Rendering == null
       )
       {
         continue;
       }
 
-      foreach (var surface in model.ScianyTrojkatne)
+      foreach (var surface in model.TriangularSurfaces)
       {
         if (
           modelPerspectiveView[surface.Vertex[0]].Z <= MinDistance &&
@@ -344,7 +344,7 @@ class Scene
             };
         }
 
-        model.Renderowanie.RenderTriangle(
+        model.Rendering.RenderTriangle(
           vertices: surfaceVertices,
           normalVertex: gradient,
           textureVertex: texture,
